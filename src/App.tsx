@@ -15,17 +15,14 @@ enum PieceColor {
 }
 
 function getPiecesFromFEN(fenString: string) {
-  const piecePositionFEN =
-    "r2q1rk1/pppb4/1nn1pp1p/4P3/3P4/PB1Q1N2/1P3PPP/R4RK1 w - - 0 1".split(
-      " "
-    )[0];
+  const piecePositionFEN = fenString.split(" ")[0];
 
   const result = [];
   let currentRow = [];
   for (let i = 0; i < piecePositionFEN.length; i++) {
     const char = piecePositionFEN.charAt(i);
     const charAsNumber = parseInt(char);
-    if (char === "/" || i === piecePositionFEN.length - 1) {
+    if (char === "/") {
       // found a new row
       result.push(currentRow);
       currentRow = [];
@@ -44,6 +41,8 @@ function getPiecesFromFEN(fenString: string) {
     }
   }
 
+  result.push(currentRow);
+
   return result;
 }
 
@@ -51,10 +50,10 @@ function getPieceUrl(pieceCode: string) {
   return `https://images.chesscomfiles.com/chess-themes/pieces/neo_wood/150/${pieceCode}.png`;
 }
 
-function App() {
-  const pieces = getPiecesFromFEN(
-    "r2q1rk1/pppb4/1nn1pp1p/4P3/3P4/PB1Q1N2/1P3PPP/R4RK1 w - - 0 1"
-  );
+function Board(props: { fenString: string }) {
+  const { fenString } = props;
+
+  const pieces = getPiecesFromFEN(fenString);
 
   console.log("pieces", pieces);
 
@@ -94,6 +93,14 @@ function App() {
       })}
     </div>
   );
+}
+
+function App() {
+  const fenString =
+    new URL(window.location.href).searchParams.get("fen") ??
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1";
+
+  return <Board fenString={fenString} />;
 }
 
 export default App;
