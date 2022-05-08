@@ -1,3 +1,4 @@
+import { useCallback, useState, useMemo } from "react";
 import "./App.scss";
 
 enum PieceType {
@@ -32,7 +33,7 @@ interface ParsedFENString {
    */
   input: string;
 
-  pieces: (Piece | null)[];
+  pieces: PieceArray;
 
   turn: PieceColor;
 
@@ -40,6 +41,21 @@ interface ParsedFENString {
    * Output is from a valid fen string
    */
   isValid: boolean;
+}
+
+type PieceArray = (Piece | null)[];
+
+function movePiece(
+  pieces: (Piece | null)[],
+  fromSquare: Square,
+  toSquare: Square
+): PieceArray {
+  const { index: fromIndex } = fromSquare;
+  const { index: toIndex } = toSquare;
+  const temp = pieces[toIndex];
+  pieces[toIndex] = pieces[fromIndex];
+  pieces[fromIndex] = temp;
+  return pieces;
 }
 
 function getPiecesFromFEN(fenString: string): ParsedFENString {
@@ -108,9 +124,43 @@ function getPieceGraphicCSS(piece: Piece): React.CSSProperties {
 function Board(props: { fenString: string }) {
   const { fenString } = props;
 
-  const { pieces, turn } = getPiecesFromFEN(fenString);
+  const { pieces, turn } = useMemo(() => getPiecesFromFEN(fenString), []);
 
   console.log("pieces", pieces);
+
+  const [activePiece, setActivePiece] = useState<Piece | null>(null);
+  const [activeSquare, setActiveSquare] = useState<Square | null>(null);
+
+  const selectPiece = useCallback(
+    (piece: Piece, fromSquare: Square) => {
+      console.log(
+        "mousedown",
+        fromSquare.file,
+        fromSquare.rank,
+        "piece",
+        piece.color,
+        piece.type
+      );
+      if (!activePiece) {
+        setActivePiece(piece);
+        setActiveSquare(fromSquare);
+      }
+    },
+    [activePiece]
+  );
+
+  const mouseUpOnSquare = useCallback(
+    (square: Square) => {
+      console.log("mouseup", square.file, square.rank);
+
+      if (activePiece && activeSquare) {
+        movePiece(pieces, activeSquare, square);
+        setActivePiece(null);
+        setActiveSquare(null);
+      }
+    },
+    [activeSquare]
+  );
 
   return (
     <div>
@@ -135,6 +185,7 @@ function Board(props: { fenString: string }) {
                     ...getBoardPositionCSS(row, column),
                     ...getPieceGraphicCSS(piece),
                   }}
+                  onMouseDown={() => selectPiece(piece, square)}
                 ></div>
               )}
               <div
@@ -148,6 +199,7 @@ function Board(props: { fenString: string }) {
                 data-index={square.index}
                 data-rank={square.rank}
                 data-file={square.file}
+                onMouseUp={() => mouseUpOnSquare(square)}
               >
                 <div className="label">
                   {square.file}
@@ -168,6 +220,10 @@ function Board(props: { fenString: string }) {
             : ""}
         </div>
         <div>FenString: {fenString}</div>
+        <div>
+          Active: {activePiece?.color}
+          {activePiece?.type}
+        </div>
       </div>
     </div>
   );
