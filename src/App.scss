@@ -1,19 +1,24 @@
 .chess-board {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  display: block;
+  position: relative;
   width: 500px;
   height: 500px;
+  z-index: 0;
+}
+
+.square, .piece {
+  display: block;
+  position: absolute;
+  width: 12.5%;
+  height: 12.5%;
 }
 
 .square {
-  flex: 1 1 12.5%;
-  position: relative;
-
-  &.even {
+  z-index: 1;
+  &.dark {
     background: rgba(0, 0, 0, 0.1);
   }
-  &.odd {
+  &.light {
     background: rgba(0, 0, 0, 0.2);
   }
 
@@ -29,9 +34,7 @@
 }
 
 .piece {
-  position: absolute;
-  width: 100%;
-  height: 100%;
+  z-index: 2;
   background-position: center;
   background-size: cover;
 }

@@ -14,50 +14,95 @@ enum PieceColor {
   White = "w",
 }
 
-function getPiecesFromFEN(fenString: string) {
+interface Piece {
+  type: PieceType;
+  color: PieceColor;
+}
+
+interface Square {
+  index: number;
+  rank: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  file: "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H";
+  color: "light" | "dark";
+}
+
+interface ParsedFENString {
+  /**
+   * Input
+   */
+  input: string;
+
+  pieces: (Piece | null)[];
+
+  turn: PieceColor;
+
+  /**
+   * Output is from a valid fen string
+   */
+  isValid: boolean;
+}
+
+function getPiecesFromFEN(fenString: string): ParsedFENString {
   const splitFen = fenString.split(" ");
   const fen = {
     board: splitFen[0],
     turn: splitFen[1],
   };
 
-  const result = [];
-  let currentRow = [];
+  const pieces: (Piece | null)[] = [];
 
   for (let i = 0; i < fen.board.length; i++) {
     const char = fen.board.charAt(i);
-    const charAsNumber = parseInt(char);
 
+    // new row
     if (char === "/") {
-      // found a new row
-      result.push(currentRow);
-      currentRow = [];
-    } else if (!isNaN(charAsNumber)) {
-      // found a number
-      for (let j = 0; j < charAsNumber; j++) {
-        currentRow.push("");
-      }
-    } else {
-      // looking at a piece
-      const color =
-        char === char.toUpperCase() ? PieceColor.White : PieceColor.Black;
-      const type = char.toLowerCase();
+      continue;
+    }
 
-      currentRow.push(color + type);
+    // char is number
+    const charAsNumber = parseInt(char);
+    if (!isNaN(charAsNumber)) {
+      // push consecutive blank spaces
+      for (let j = 0; j < charAsNumber; j++) {
+        pieces.push(null);
+      }
+      continue;
+    }
+
+    // found a piece
+    const charLowerCase = char.toLowerCase();
+    const pieceType =
+      "prnbqk".includes(charLowerCase) && (charLowerCase as PieceType);
+    if (pieceType) {
+      pieces.push({
+        color:
+          char === char.toUpperCase() ? PieceColor.White : PieceColor.Black,
+        type: pieceType,
+      });
     }
   }
 
-  result.push(currentRow);
-
   return {
-    fenString,
-    pieces: result,
+    input: fenString,
+    pieces,
     turn: fen.turn === "b" ? PieceColor.Black : PieceColor.White,
+    isValid: pieces.length === 64,
   };
 }
 
-function getPieceUrl(pieceCode: string) {
-  return `https://images.chesscomfiles.com/chess-themes/pieces/neo_wood/150/${pieceCode}.png`;
+function getBoardPositionCSS(row: number, column: number): React.CSSProperties {
+  const transformX = `${column * 100}%`;
+  const transformY = `${row * 100}%`;
+  return {
+    transform: `translate(${transformX}, ${transformY})`,
+  };
+}
+
+function getPieceGraphicCSS(piece: Piece): React.CSSProperties {
+  const pieceCode = `${piece.color}${piece.type}`;
+  return {
+    backgroundImage: `url(https://images.chesscomfiles.com/chess-themes/pieces/neo_wood/150/${pieceCode}.png)`,
+  };
 }
 
 function Board(props: { fenString: string }) {
@@ -70,36 +115,46 @@ function Board(props: { fenString: string }) {
   return (
     <div>
       <div className="chess-board">
-        {[...Array(64)].map((e, i) => {
+        {pieces.map((piece, i) => {
           const row = Math.floor(i / 8);
           const column = i % 8;
-          const rank = row + 1;
-          const file = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(column);
-          const pieceCode = pieces[row][column];
+
+          const square: Square = {
+            index: i,
+            color: i % 2 === (row % 2 === 0 ? 0 : 1) ? "dark" : "light",
+            rank: (row + 1) as Square["rank"],
+            file: "ABCDEFGH".charAt(column) as Square["file"],
+          };
 
           return (
-            <div
-              key={i}
-              className={`square ${
-                i % 2 === (row % 2 === 0 ? 0 : 1) ? "even" : "odd"
-              }`}
-              data-index={i}
-              data-rank={rank}
-              data-file={file}
-            >
-              {pieceCode && (
+            <>
+              {piece && (
                 <div
                   className="piece"
                   style={{
-                    backgroundImage: `url(${getPieceUrl(pieceCode)})`,
+                    ...getBoardPositionCSS(row, column),
+                    ...getPieceGraphicCSS(piece),
                   }}
                 ></div>
               )}
-              <div className="label">
-                {file}
-                {rank}
+              <div
+                key={i}
+                className={`square ${
+                  square.color === "dark" ? "dark" : "light"
+                }`}
+                style={{
+                  ...getBoardPositionCSS(row, column),
+                }}
+                data-index={square.index}
+                data-rank={square.rank}
+                data-file={square.file}
+              >
+                <div className="label">
+                  {square.file}
+                  {square.rank}
+                </div>
               </div>
-            </div>
+            </>
           );
         })}
       </div>
