@@ -15,13 +15,19 @@ enum PieceColor {
 }
 
 function getPiecesFromFEN(fenString: string) {
-  const piecePositionFEN = fenString.split(" ")[0];
+  const splitFen = fenString.split(" ");
+  const fen = {
+    board: splitFen[0],
+    turn: splitFen[1],
+  };
 
   const result = [];
   let currentRow = [];
-  for (let i = 0; i < piecePositionFEN.length; i++) {
-    const char = piecePositionFEN.charAt(i);
+
+  for (let i = 0; i < fen.board.length; i++) {
+    const char = fen.board.charAt(i);
     const charAsNumber = parseInt(char);
+
     if (char === "/") {
       // found a new row
       result.push(currentRow);
@@ -43,7 +49,11 @@ function getPiecesFromFEN(fenString: string) {
 
   result.push(currentRow);
 
-  return result;
+  return {
+    fenString,
+    pieces: result,
+    turn: fen.turn === "b" ? PieceColor.Black : PieceColor.White,
+  };
 }
 
 function getPieceUrl(pieceCode: string) {
@@ -53,44 +63,57 @@ function getPieceUrl(pieceCode: string) {
 function Board(props: { fenString: string }) {
   const { fenString } = props;
 
-  const pieces = getPiecesFromFEN(fenString);
+  const { pieces, turn } = getPiecesFromFEN(fenString);
 
   console.log("pieces", pieces);
 
   return (
-    <div className="chess-board">
-      {[...Array(64)].map((e, i) => {
-        const row = Math.floor(i / 8);
-        const column = i % 8;
-        const rank = row + 1;
-        const file = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(column);
-        const pieceCode = pieces[row][column];
+    <div>
+      <div className="chess-board">
+        {[...Array(64)].map((e, i) => {
+          const row = Math.floor(i / 8);
+          const column = i % 8;
+          const rank = row + 1;
+          const file = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(column);
+          const pieceCode = pieces[row][column];
 
-        return (
-          <div
-            key={i}
-            className={`square ${
-              i % 2 === (row % 2 === 0 ? 0 : 1) ? "even" : "odd"
-            }`}
-            data-index={i}
-            data-rank={rank}
-            data-file={file}
-          >
-            {pieceCode && (
-              <div
-                className="piece"
-                style={{
-                  backgroundImage: `url(${getPieceUrl(pieceCode)})`,
-                }}
-              ></div>
-            )}
-            <div className="label">
-              {file}
-              {rank}
+          return (
+            <div
+              key={i}
+              className={`square ${
+                i % 2 === (row % 2 === 0 ? 0 : 1) ? "even" : "odd"
+              }`}
+              data-index={i}
+              data-rank={rank}
+              data-file={file}
+            >
+              {pieceCode && (
+                <div
+                  className="piece"
+                  style={{
+                    backgroundImage: `url(${getPieceUrl(pieceCode)})`,
+                  }}
+                ></div>
+              )}
+              <div className="label">
+                {file}
+                {rank}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
+      <div>
+        <div>
+          Turn:{" "}
+          {turn === PieceColor.Black
+            ? "Black"
+            : turn === PieceColor.White
+            ? "White"
+            : ""}
+        </div>
+        <div>FenString: {fenString}</div>
+      </div>
     </div>
   );
 }
@@ -100,7 +123,16 @@ function App() {
     new URL(window.location.href).searchParams.get("fen") ??
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1";
 
-  return <Board fenString={fenString} />;
+  return (
+    <div style={{ display: "flex", flexDirection: "row" }}>
+      <Board
+        fenString={
+          "r1b2rk1/ppp2ppp/1bnp2qn/6B1/1PBPP3/P4N1P/5PP1/RN1Q1RK1 w - - 5 15"
+        }
+      />
+      <Board fenString={fenString} />
+    </div>
+  );
 }
 
 export default App;
