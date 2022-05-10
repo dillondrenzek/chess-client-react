@@ -1,55 +1,17 @@
 import { useCallback, useState, useMemo } from "react";
 import "./App.scss";
+import { Piece } from "./app/Piece";
+import { Square } from "./app/Square";
+import * as Chess from "./chess-types";
 
-enum PieceType {
-  Pawn = "p",
-  Rook = "r",
-  Knight = "n",
-  Bishop = "b",
-  Queen = "q",
-  King = "k",
-}
-
-enum PieceColor {
-  Black = "b",
-  White = "w",
-}
-
-interface Piece {
-  type: PieceType;
-  color: PieceColor;
-}
-
-interface Square {
-  index: number;
-  rank: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-  file: "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H";
-  color: "light" | "dark";
-}
-
-interface ParsedFENString {
-  /**
-   * Input
-   */
-  input: string;
-
-  pieces: PieceArray;
-
-  turn: PieceColor;
-
-  /**
-   * Output is from a valid fen string
-   */
-  isValid: boolean;
-}
-
-type PieceArray = (Piece | null)[];
+const DEFAULT_FEN_STRING =
+  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 function movePiece(
-  pieces: (Piece | null)[],
-  fromSquare: Square,
-  toSquare: Square
-): PieceArray {
+  pieces: Chess.PieceArray,
+  fromSquare: Chess.Square,
+  toSquare: Chess.Square
+): Chess.PieceArray {
   const { index: fromIndex } = fromSquare;
   const { index: toIndex } = toSquare;
   const temp = pieces[toIndex];
@@ -58,14 +20,14 @@ function movePiece(
   return pieces;
 }
 
-function getPiecesFromFEN(fenString: string): ParsedFENString {
+function getPiecesFromFEN(fenString: string): Chess.ParsedFENString {
   const splitFen = fenString.split(" ");
   const fen = {
     board: splitFen[0],
     turn: splitFen[1],
   };
 
-  const pieces: (Piece | null)[] = [];
+  const pieces: Chess.PieceArray = [];
 
   for (let i = 0; i < fen.board.length; i++) {
     const char = fen.board.charAt(i);
@@ -88,11 +50,13 @@ function getPiecesFromFEN(fenString: string): ParsedFENString {
     // found a piece
     const charLowerCase = char.toLowerCase();
     const pieceType =
-      "prnbqk".includes(charLowerCase) && (charLowerCase as PieceType);
+      "prnbqk".includes(charLowerCase) && (charLowerCase as Chess.PieceType);
     if (pieceType) {
       pieces.push({
         color:
-          char === char.toUpperCase() ? PieceColor.White : PieceColor.Black,
+          char === char.toUpperCase()
+            ? Chess.PieceColor.White
+            : Chess.PieceColor.Black,
         type: pieceType,
       });
     }
@@ -101,7 +65,7 @@ function getPiecesFromFEN(fenString: string): ParsedFENString {
   return {
     input: fenString,
     pieces,
-    turn: fen.turn === "b" ? PieceColor.Black : PieceColor.White,
+    turn: fen.turn === "b" ? Chess.PieceColor.Black : Chess.PieceColor.White,
     isValid: pieces.length === 64,
   };
 }
@@ -114,25 +78,34 @@ function getBoardPositionCSS(row: number, column: number): React.CSSProperties {
   };
 }
 
-function getPieceGraphicCSS(piece: Piece): React.CSSProperties {
-  const pieceCode = `${piece.color}${piece.type}`;
+function getSquareForIndex(index: number): Chess.Square {
+  const row = Math.floor(index / 8);
+  const column = index % 8;
+
   return {
-    backgroundImage: `url(https://images.chesscomfiles.com/chess-themes/pieces/neo_wood/150/${pieceCode}.png)`,
+    index: index,
+    row,
+    column,
+    color: index % 2 === (row % 2 === 0 ? 0 : 1) ? "dark" : "light",
+    rank: (row + 1) as Chess.BoardRank,
+    file: "ABCDEFGH".charAt(column) as Chess.BoardFile,
   };
 }
 
 function Board(props: { fenString: string }) {
   const { fenString } = props;
 
-  const { pieces, turn } = useMemo(() => getPiecesFromFEN(fenString), []);
+  const [fen, setFen] = useState<string>(fenString);
+
+  const { pieces, turn, input } = useMemo(() => getPiecesFromFEN(fen), [fen]);
 
   console.log("pieces", pieces);
 
-  const [activePiece, setActivePiece] = useState<Piece | null>(null);
-  const [activeSquare, setActiveSquare] = useState<Square | null>(null);
+  const [activePiece, setActivePiece] = useState<Chess.Piece | null>(null);
+  const [activeSquare, setActiveSquare] = useState<Chess.Square | null>(null);
 
   const selectPiece = useCallback(
-    (piece: Piece, fromSquare: Square) => {
+    (piece: Chess.Piece, fromSquare: Chess.Square) => {
       console.log(
         "mousedown",
         fromSquare.file,
@@ -150,7 +123,7 @@ function Board(props: { fenString: string }) {
   );
 
   const mouseUpOnSquare = useCallback(
-    (square: Square) => {
+    (square: Chess.Square) => {
       console.log("mouseup", square.file, square.rank);
 
       if (activePiece && activeSquare) {
@@ -159,53 +132,25 @@ function Board(props: { fenString: string }) {
         setActiveSquare(null);
       }
     },
-    [activeSquare]
+    [activeSquare, activePiece, pieces]
   );
 
   return (
     <div>
       <div className="chess-board">
         {pieces.map((piece, i) => {
-          const row = Math.floor(i / 8);
-          const column = i % 8;
-
-          const square: Square = {
-            index: i,
-            color: i % 2 === (row % 2 === 0 ? 0 : 1) ? "dark" : "light",
-            rank: (row + 1) as Square["rank"],
-            file: "ABCDEFGH".charAt(column) as Square["file"],
-          };
+          const square = getSquareForIndex(i);
 
           return (
             <>
               {piece && (
-                <div
-                  className="piece"
-                  style={{
-                    ...getBoardPositionCSS(row, column),
-                    ...getPieceGraphicCSS(piece),
-                  }}
-                  onMouseDown={() => selectPiece(piece, square)}
-                ></div>
+                <Piece
+                  piece={piece}
+                  square={square}
+                  onMouseDown={selectPiece}
+                />
               )}
-              <div
-                key={i}
-                className={`square ${
-                  square.color === "dark" ? "dark" : "light"
-                }`}
-                style={{
-                  ...getBoardPositionCSS(row, column),
-                }}
-                data-index={square.index}
-                data-rank={square.rank}
-                data-file={square.file}
-                onMouseUp={() => mouseUpOnSquare(square)}
-              >
-                <div className="label">
-                  {square.file}
-                  {square.rank}
-                </div>
-              </div>
+              <Square square={square} onMouseUp={mouseUpOnSquare} />
             </>
           );
         })}
@@ -213,13 +158,13 @@ function Board(props: { fenString: string }) {
       <div>
         <div>
           Turn:{" "}
-          {turn === PieceColor.Black
+          {turn === Chess.PieceColor.Black
             ? "Black"
-            : turn === PieceColor.White
+            : turn === Chess.PieceColor.White
             ? "White"
             : ""}
         </div>
-        <div>FenString: {fenString}</div>
+        <div>FenString: {input}</div>
         <div>
           Active: {activePiece?.color}
           {activePiece?.type}
@@ -231,8 +176,7 @@ function Board(props: { fenString: string }) {
 
 function App() {
   const fenString =
-    new URL(window.location.href).searchParams.get("fen") ??
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1";
+    new URL(window.location.href).searchParams.get("fen") ?? DEFAULT_FEN_STRING;
 
   return (
     <div style={{ display: "flex", flexDirection: "row" }}>
