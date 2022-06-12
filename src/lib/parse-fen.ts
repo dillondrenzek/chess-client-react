@@ -1,5 +1,11 @@
 import * as Chess from "./chess-types";
 
+/**
+ * FEN String for the beginning state of a chess game
+ */
+export const DEFAULT_FEN_STRING =
+  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 export type PieceArray = (Chess.Piece | null)[];
 
 export interface ParsedFENString {
