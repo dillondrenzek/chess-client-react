@@ -1,81 +1,27 @@
-import { useCallback, useState, useMemo } from "react";
+import { useCallback, useState, useMemo, useReducer } from "react";
 import "./App.scss";
 import { Piece } from "./app/Piece";
 import { Square } from "./app/Square";
-import * as Chess from "./chess-types";
+import { getPiecesFromFEN, PieceArray } from "./lib/parse-fen";
+import * as Chess from "./lib/chess-types";
 
+/**
+ * FEN String for the beginning state of a chess game
+ */
 const DEFAULT_FEN_STRING =
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 function movePiece(
-  pieces: Chess.PieceArray,
+  pieces: PieceArray,
   fromSquare: Chess.Square,
   toSquare: Chess.Square
-): Chess.PieceArray {
+): PieceArray {
   const { index: fromIndex } = fromSquare;
   const { index: toIndex } = toSquare;
   const temp = pieces[toIndex];
   pieces[toIndex] = pieces[fromIndex];
   pieces[fromIndex] = temp;
   return pieces;
-}
-
-function getPiecesFromFEN(fenString: string): Chess.ParsedFENString {
-  const splitFen = fenString.split(" ");
-  const fen = {
-    board: splitFen[0],
-    turn: splitFen[1],
-  };
-
-  const pieces: Chess.PieceArray = [];
-
-  for (let i = 0; i < fen.board.length; i++) {
-    const char = fen.board.charAt(i);
-
-    // new row
-    if (char === "/") {
-      continue;
-    }
-
-    // char is number
-    const charAsNumber = parseInt(char);
-    if (!isNaN(charAsNumber)) {
-      // push consecutive blank spaces
-      for (let j = 0; j < charAsNumber; j++) {
-        pieces.push(null);
-      }
-      continue;
-    }
-
-    // found a piece
-    const charLowerCase = char.toLowerCase();
-    const pieceType =
-      "prnbqk".includes(charLowerCase) && (charLowerCase as Chess.PieceType);
-    if (pieceType) {
-      pieces.push({
-        color:
-          char === char.toUpperCase()
-            ? Chess.PieceColor.White
-            : Chess.PieceColor.Black,
-        type: pieceType,
-      });
-    }
-  }
-
-  return {
-    input: fenString,
-    pieces,
-    turn: fen.turn === "b" ? Chess.PieceColor.Black : Chess.PieceColor.White,
-    isValid: pieces.length === 64,
-  };
-}
-
-function getBoardPositionCSS(row: number, column: number): React.CSSProperties {
-  const transformX = `${column * 100}%`;
-  const transformY = `${row * 100}%`;
-  return {
-    transform: `translate(${transformX}, ${transformY})`,
-  };
 }
 
 function getSquareForIndex(index: number): Chess.Square {
@@ -92,12 +38,48 @@ function getSquareForIndex(index: number): Chess.Square {
   };
 }
 
+interface ChessState {
+  pieces: (Chess.Piece | null)[];
+
+  turn: Chess.PieceColor;
+}
+
+type ChessStateAction = "";
+
+type ChessStateReducer = (
+  prevState: ChessState,
+  action: ChessStateAction
+) => ChessState;
+
+function useChessState(fenString: string) {
+  const { pieces, turn, input, isValid } = useMemo(
+    () => getPiecesFromFEN(fenString),
+    [fenString]
+  );
+
+  const [fen, setFen] = useState<string>(isValid ? input : DEFAULT_FEN_STRING);
+
+  const [state, dispatch] = useReducer<ChessStateReducer>(
+    (prevState, action) => prevState,
+    {
+      pieces,
+      turn,
+    }
+  );
+
+  return {
+    fen,
+    pieces,
+    turn,
+    input,
+    isValid,
+  };
+}
+
 function Board(props: { fenString: string }) {
   const { fenString } = props;
 
-  const [fen, setFen] = useState<string>(fenString);
-
-  const { pieces, turn, input } = useMemo(() => getPiecesFromFEN(fen), [fen]);
+  const { fen, pieces, turn, input } = useChessState(fenString);
 
   console.log("pieces", pieces);
 
@@ -164,7 +146,7 @@ function Board(props: { fenString: string }) {
             ? "White"
             : ""}
         </div>
-        <div>FenString: {input}</div>
+        <div>FenString: {fen}</div>
         <div>
           Active: {activePiece?.color}
           {activePiece?.type}
@@ -180,11 +162,11 @@ function App() {
 
   return (
     <div style={{ display: "flex", flexDirection: "row" }}>
-      <Board
+      {/* <Board
         fenString={
           "r1b2rk1/ppp2ppp/1bnp2qn/6B1/1PBPP3/P4N1P/5PP1/RN1Q1RK1 w - - 5 15"
         }
-      />
+      /> */}
       <Board fenString={fenString} />
     </div>
   );

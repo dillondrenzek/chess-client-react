@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import * as Chess from "../chess-types";
+import * as Chess from "../lib/chess-types";
 
 function getBoardPositionCSS(row: number, column: number): React.CSSProperties {
   const transformX = `${column * 100}%`;

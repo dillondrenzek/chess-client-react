@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import * as Chess from "../chess-types";
+import * as Chess from "../lib/chess-types";
 
 function getPieceGraphicCSS(piece: Chess.Piece): React.CSSProperties {
   const pieceCode = `${piece.color}${piece.type}`;
@@ -19,7 +19,11 @@ function getBoardPositionCSS(row: number, column: number): React.CSSProperties {
 interface PieceProps {
   piece: Chess.Piece;
   square: Chess.Square;
-  onMouseDown: (piece: Chess.Piece, square: Chess.Square) => void;
+  onMouseDown: (
+    piece: Chess.Piece,
+    square: Chess.Square,
+    mouseEvent: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => void;
 }
 
 export function Piece(props: PieceProps) {
@@ -27,9 +31,13 @@ export function Piece(props: PieceProps) {
 
   const { row, column } = square;
 
-  const handleMouseDown = useCallback(() => {
-    onMouseDown(piece, square);
-  }, [onMouseDown, piece, square]);
+  const handleMouseDown = useCallback<React.MouseEventHandler<HTMLDivElement>>(
+    (e) => {
+      console.log("mousedown", e);
+      onMouseDown(piece, square, e);
+    },
+    [onMouseDown, piece, square]
+  );
 
   return (
     <div
