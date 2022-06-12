@@ -2,14 +2,13 @@ import { useCallback, useState, useMemo, useReducer } from "react";
 import "./App.scss";
 import { Piece } from "./app/Piece";
 import { Square } from "./app/Square";
-import { getPiecesFromFEN, PieceArray } from "./lib/parse-fen";
+import {
+  getPiecesFromFEN,
+  PieceArray,
+  DEFAULT_FEN_STRING,
+} from "./lib/parse-fen";
 import * as Chess from "./lib/chess-types";
-
-/**
- * FEN String for the beginning state of a chess game
- */
-const DEFAULT_FEN_STRING =
-  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+import { useChessState } from "./hooks/use-chess-state";
 
 function movePiece(
   pieces: PieceArray,
@@ -38,50 +37,10 @@ function getSquareForIndex(index: number): Chess.Square {
   };
 }
 
-interface ChessState {
-  pieces: (Chess.Piece | null)[];
-
-  turn: Chess.PieceColor;
-}
-
-type ChessStateAction = "";
-
-type ChessStateReducer = (
-  prevState: ChessState,
-  action: ChessStateAction
-) => ChessState;
-
-function useChessState(fenString: string) {
-  const { pieces, turn, input, isValid } = useMemo(
-    () => getPiecesFromFEN(fenString),
-    [fenString]
-  );
-
-  const [fen, setFen] = useState<string>(isValid ? input : DEFAULT_FEN_STRING);
-
-  const [state, dispatch] = useReducer<ChessStateReducer>(
-    (prevState, action) => prevState,
-    {
-      pieces,
-      turn,
-    }
-  );
-
-  return {
-    fen,
-    pieces,
-    turn,
-    input,
-    isValid,
-  };
-}
-
 function Board(props: { fenString: string }) {
   const { fenString } = props;
 
   const { fen, pieces, turn, input } = useChessState(fenString);
-
-  console.log("pieces", pieces);
 
   const [activePiece, setActivePiece] = useState<Chess.Piece | null>(null);
   const [activeSquare, setActiveSquare] = useState<Chess.Square | null>(null);
@@ -89,12 +48,11 @@ function Board(props: { fenString: string }) {
   const selectPiece = useCallback(
     (piece: Chess.Piece, fromSquare: Chess.Square) => {
       console.log(
-        "mousedown",
-        fromSquare.file,
-        fromSquare.rank,
-        "piece",
+        "Select piece:",
         piece.color,
-        piece.type
+        piece.type,
+        "@",
+        fromSquare.file + fromSquare.rank
       );
       if (!activePiece) {
         setActivePiece(piece);
@@ -106,7 +64,7 @@ function Board(props: { fenString: string }) {
 
   const mouseUpOnSquare = useCallback(
     (square: Chess.Square) => {
-      console.log("mouseup", square.file, square.rank);
+      console.log("Mouse up:", square.file + square.rank);
 
       if (activePiece && activeSquare) {
         movePiece(pieces, activeSquare, square);
