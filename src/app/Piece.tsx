@@ -47,6 +47,6 @@ export function Piece(props: PieceProps) {
         ...getPieceGraphicCSS(piece),
       }}
       onMouseDown={handleMouseDown}
-    ></div>
+    />
   );
 }
