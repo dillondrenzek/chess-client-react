@@ -36,7 +36,7 @@ function getSquareForIndex(index: number): Chess.Square {
 function Board(props: { fenString: string }) {
   const { fenString } = props;
 
-  const { fen, pieces, turn, input } = useChessState(fenString);
+  const { fen, pieces, turn } = useChessState(fenString);
 
   const [activePiece, setActivePiece] = useState<Chess.Piece | null>(null);
   const [activeSquare, setActiveSquare] = useState<Chess.Square | null>(null);
