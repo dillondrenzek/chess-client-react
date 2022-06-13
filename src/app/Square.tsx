@@ -1,7 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, MouseEvent, CSSProperties } from "react";
 import * as Chess from "../lib/chess-types";
 
-function getBoardPositionCSS(row: number, column: number): React.CSSProperties {
+function getBoardPositionCSS(row: number, column: number): CSSProperties {
   const transformX = `${column * 100}%`;
   const transformY = `${row * 100}%`;
   return {
@@ -11,15 +11,18 @@ function getBoardPositionCSS(row: number, column: number): React.CSSProperties {
 
 interface SquareProps {
   square: Chess.Square;
-  onMouseUp: (square: Chess.Square) => void;
+  onMouseUp: (square: Chess.Square, e: MouseEvent) => void;
 }
 
 export function Square(props: SquareProps) {
   const { square, onMouseUp } = props;
 
-  const handleMouseUp = useCallback(() => {
-    onMouseUp(square);
-  }, [onMouseUp, square]);
+  const handleMouseUp = useCallback(
+    (e: MouseEvent) => {
+      onMouseUp(square, e);
+    },
+    [onMouseUp, square]
+  );
 
   return (
     <div

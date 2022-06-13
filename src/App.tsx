@@ -1,12 +1,8 @@
-import { useCallback, useState, useMemo, useReducer } from "react";
+import { useCallback, useState, MouseEvent } from "react";
 import "./App.scss";
 import { Piece } from "./app/Piece";
 import { Square } from "./app/Square";
-import {
-  getPiecesFromFEN,
-  PieceArray,
-  DEFAULT_FEN_STRING,
-} from "./lib/parse-fen";
+import { PieceArray, DEFAULT_FEN_STRING } from "./lib/parse-fen";
 import * as Chess from "./lib/chess-types";
 import { useChessState } from "./hooks/use-chess-state";
 
@@ -46,7 +42,7 @@ function Board(props: { fenString: string }) {
   const [activeSquare, setActiveSquare] = useState<Chess.Square | null>(null);
 
   const selectPiece = useCallback(
-    (piece: Chess.Piece, fromSquare: Chess.Square) => {
+    (piece: Chess.Piece, fromSquare: Chess.Square, e: MouseEvent) => {
       console.log(
         "Select piece:",
         piece.color,
