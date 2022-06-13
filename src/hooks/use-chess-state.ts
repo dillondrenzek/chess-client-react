@@ -4,10 +4,13 @@ import * as Chess from "../lib/chess-types";
 
 type Action<T extends string, U = never> = {
   type: T;
-  payload?: U;
+  payload: U;
 };
 
-type ChessStateAction = Action<"TEST", { test: boolean }>;
+type ChessStateAction = Action<
+  "MOVE_PIECE",
+  { fromSquare: Chess.Square; toSquare: Chess.Square }
+>;
 
 type ChessStateReducer = (
   prevState: Chess.ChessState,
@@ -24,9 +27,23 @@ export function useChessState(fenString: string) {
 
   const [state, dispatch] = useReducer<ChessStateReducer>(
     (prevState, action) => {
-      switch (action.type) {
-        case "TEST":
-          return prevState;
+      const { type, payload } = action;
+
+      switch (type) {
+        case "MOVE_PIECE": {
+          const { pieces } = prevState;
+          const { fromSquare, toSquare } = payload;
+          const { index: fromIndex } = fromSquare;
+          const { index: toIndex } = toSquare;
+          const temp = pieces[toIndex];
+          pieces[toIndex] = pieces[fromIndex];
+          pieces[fromIndex] = temp;
+
+          return {
+            ...prevState,
+            pieces: [...pieces],
+          };
+        }
       }
 
       return prevState;

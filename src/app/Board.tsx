@@ -1,22 +1,8 @@
 import { useCallback, useState, MouseEvent } from "react";
 import { Piece } from "../app/Piece";
 import { Square } from "../app/Square";
-import { PieceArray } from "../lib/parse-fen";
 import * as Chess from "../lib/chess-types";
 import { useChessState } from "../hooks/use-chess-state";
-
-function movePiece(
-  pieces: PieceArray,
-  fromSquare: Chess.Square,
-  toSquare: Chess.Square
-): PieceArray {
-  const { index: fromIndex } = fromSquare;
-  const { index: toIndex } = toSquare;
-  const temp = pieces[toIndex];
-  pieces[toIndex] = pieces[fromIndex];
-  pieces[fromIndex] = temp;
-  return pieces;
-}
 
 function getSquareForIndex(index: number): Chess.Square {
   const row = Math.floor(index / 8);
@@ -35,7 +21,7 @@ function getSquareForIndex(index: number): Chess.Square {
 export function Board(props: { fenString: string }) {
   const { fenString } = props;
 
-  const { fen, pieces, turn } = useChessState(fenString);
+  const { fen, pieces, turn, dispatch } = useChessState(fenString);
 
   const [activePiece, setActivePiece] = useState<Chess.Piece | null>(null);
   const [activeSquare, setActiveSquare] = useState<Chess.Square | null>(null);
@@ -62,12 +48,15 @@ export function Board(props: { fenString: string }) {
       console.log("Mouse up:", square.file + square.rank);
 
       if (activePiece && activeSquare) {
-        movePiece(pieces, activeSquare, square);
+        dispatch({
+          type: "MOVE_PIECE",
+          payload: { fromSquare: activeSquare, toSquare: square },
+        });
         setActivePiece(null);
         setActiveSquare(null);
       }
     },
-    [activeSquare, activePiece, pieces]
+    [activeSquare, activePiece, dispatch]
   );
 
   return (
