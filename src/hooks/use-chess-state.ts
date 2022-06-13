@@ -28,20 +28,21 @@ export function useChessState(fenString: string) {
   const [state, dispatch] = useReducer<ChessStateReducer>(
     (prevState, action) => {
       const { type, payload } = action;
+      const { pieces } = prevState;
 
       switch (type) {
         case "MOVE_PIECE": {
-          const { pieces } = prevState;
           const { fromSquare, toSquare } = payload;
           const { index: fromIndex } = fromSquare;
           const { index: toIndex } = toSquare;
-          const temp = pieces[toIndex];
-          pieces[toIndex] = pieces[fromIndex];
-          pieces[fromIndex] = temp;
+
+          const newPieces = [...pieces];
+          newPieces[fromIndex] = null;
+          newPieces[toIndex] = pieces[fromIndex];
 
           return {
             ...prevState,
-            pieces: [...pieces],
+            pieces: newPieces,
           };
         }
       }
