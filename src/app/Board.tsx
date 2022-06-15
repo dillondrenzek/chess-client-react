@@ -3,22 +3,14 @@ import { Piece } from "../app/Piece";
 import { Square } from "../app/Square";
 import * as Chess from "../lib/chess-types";
 import { useChessState } from "../hooks/use-chess-state";
+import { getSquareForIndex } from "../lib/chess-fns";
+import { toReadableString } from "../lib/logging";
 
-function getSquareForIndex(index: number): Chess.Square {
-  const row = Math.floor(index / 8);
-  const column = index % 8;
-
-  return {
-    index: index,
-    row,
-    column,
-    color: index % 2 === (row % 2 === 0 ? 0 : 1) ? "dark" : "light",
-    rank: (row + 1) as Chess.BoardRank,
-    file: "ABCDEFGH".charAt(column) as Chess.BoardFile,
-  };
+interface BoardProps {
+  fenString: string;
 }
 
-export function Board(props: { fenString: string }) {
+export function Board(props: BoardProps) {
   const { fenString } = props;
 
   const { fen, pieces, turn, dispatch } = useChessState(fenString);
@@ -30,8 +22,7 @@ export function Board(props: { fenString: string }) {
     (piece: Chess.Piece, fromSquare: Chess.Square, e: MouseEvent) => {
       console.log(
         "Select piece:",
-        piece.color,
-        piece.type,
+        toReadableString(piece),
         "@",
         fromSquare.file + fromSquare.rank
       );

@@ -1,4 +1,5 @@
 import * as Chess from "./chess-types";
+import { isValidFen } from "./valid-fen";
 
 /**
  * FEN String for the beginning state of a chess game
@@ -70,6 +71,6 @@ export function getPiecesFromFEN(fenString: string): ParsedFENString {
     input: fenString,
     pieces,
     turn: fen.turn === "b" ? Chess.PieceColor.Black : Chess.PieceColor.White,
-    isValid: pieces.length === 64,
+    isValid: isValidFen(fenString),
   };
 }

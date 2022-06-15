@@ -17,6 +17,10 @@ export interface Piece {
   color: PieceColor;
 }
 
+export function isPiece(value: unknown): value is Piece {
+  return value instanceof Object && "type" in value && "color" in value;
+}
+
 export interface Square {
   row: number;
   column: number;

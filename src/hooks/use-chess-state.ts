@@ -1,6 +1,7 @@
-import { useState, useMemo, useReducer } from "react";
+import { useState, useMemo, useReducer, useEffect } from "react";
 import { getPiecesFromFEN, DEFAULT_FEN_STRING } from "../lib/parse-fen";
 import * as Chess from "../lib/chess-types";
+import { chessStateToFen } from "../lib/chess-state-to-fen";
 
 type Action<T extends string, U = never> = {
   type: T;
@@ -23,7 +24,7 @@ export function useChessState(fenString: string) {
     [fenString]
   );
 
-  const [fen] = useState<string>(isValid ? input : DEFAULT_FEN_STRING);
+  const [fen, setFen] = useState<string>(isValid ? input : DEFAULT_FEN_STRING);
 
   const [state, dispatch] = useReducer<ChessStateReducer>(
     (prevState, action) => {
@@ -54,6 +55,12 @@ export function useChessState(fenString: string) {
       turn,
     }
   );
+
+  // Update FEN string
+  useEffect(() => {
+    const newFen = chessStateToFen(state);
+    setFen(newFen);
+  }, [state]);
 
   return {
     fen,
