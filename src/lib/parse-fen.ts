@@ -7,15 +7,13 @@ import { isValidFen } from "./valid-fen";
 export const DEFAULT_FEN_STRING =
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-export type PieceArray = (Chess.Piece | null)[];
-
 export interface ParsedFENString {
   /**
    * Input
    */
   input: string;
 
-  pieces: PieceArray;
+  pieces: Chess.PieceArray;
 
   turn: Chess.PieceColor;
 
@@ -32,7 +30,7 @@ export function getPiecesFromFEN(fenString: string): ParsedFENString {
     turn: splitFen[1],
   };
 
-  const pieces: PieceArray = [];
+  const pieces: Chess.PieceArray = [];
 
   for (let i = 0; i < fen.board.length; i++) {
     const char = fen.board.charAt(i);
