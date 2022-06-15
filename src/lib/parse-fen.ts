@@ -7,6 +7,8 @@ import { isValidFen } from "./valid-fen";
 export const DEFAULT_FEN_STRING =
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+const ROW_TERMINATOR = "/";
+
 export interface ParsedFENString {
   /**
    * Input
@@ -36,7 +38,7 @@ export function getPiecesFromFEN(fenString: string): ParsedFENString {
     const char = fen.board.charAt(i);
 
     // new row
-    if (char === "/") {
+    if (char === ROW_TERMINATOR) {
       continue;
     }
 

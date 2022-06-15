@@ -2,22 +2,17 @@ import { getColumnForIndex, getRowForIndex } from "./chess-fns";
 import { ChessState, Piece, PieceColor, PieceType } from "./chess-types";
 
 /**
- * Key: `PieceType`
- * Value: fen string
- */
-const pieceTypeFenMap = {
-  [PieceType.Bishop]: "b",
-  [PieceType.King]: "k",
-  [PieceType.Knight]: "n",
-  [PieceType.Pawn]: "p",
-  [PieceType.Queen]: "q",
-  [PieceType.Rook]: "r",
-};
-
-/**
  * Converts a `Piece` into a valid FEN representation
  */
 function getFenForPiece(piece: Piece) {
+  const pieceTypeFenMap = {
+    [PieceType.Bishop]: "b",
+    [PieceType.King]: "k",
+    [PieceType.Knight]: "n",
+    [PieceType.Pawn]: "p",
+    [PieceType.Queen]: "q",
+    [PieceType.Rook]: "r",
+  };
   const type = pieceTypeFenMap[piece.type];
   return piece.color === PieceColor.White ? type.toUpperCase() : type;
 }
@@ -30,11 +25,8 @@ export function chessStateToFen(state: ChessState): string {
   const pieces = (() => {
     let result = "";
     let blanks = 0;
-    state.pieces.forEach((piece, index, arr) => {
-      if (index > 63) {
-        throw new Error("TOO_MANY_PIECES");
-      }
 
+    state.pieces.forEach((piece, index, arr) => {
       if (piece) {
         // found a piece
         if (blanks > 0) {
