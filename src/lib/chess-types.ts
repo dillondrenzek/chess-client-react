@@ -1,3 +1,6 @@
+/**
+ * @deprecated
+ */
 export enum PieceType {
   Pawn = "p",
   Rook = "r",
@@ -7,11 +10,17 @@ export enum PieceType {
   King = "k",
 }
 
+/**
+ * @deprecated
+ */
 export enum PieceColor {
   Black = "b",
   White = "w",
 }
 
+/**
+ * @deprecated
+ */
 export interface Piece {
   type: PieceType;
   color: PieceColor;
