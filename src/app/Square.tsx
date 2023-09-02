@@ -11,18 +11,21 @@ function getBoardPositionCSS(row: number, column: number): CSSProperties {
 
 interface SquareProps {
   square: Chess.Square;
-  onMouseUp: (square: Chess.Square, e: MouseEvent) => void;
+  // onMouseUp: (square: Chess.Square, e: MouseEvent) => void;
 }
 
 export function Square(props: SquareProps) {
-  const { square, onMouseUp } = props;
+  const {
+    square,
+    // onMouseUp
+  } = props;
 
-  const handleMouseUp = useCallback(
-    (e: MouseEvent) => {
-      onMouseUp(square, e);
-    },
-    [onMouseUp, square]
-  );
+  // const handleMouseUp = useCallback(
+  //   (e: MouseEvent) => {
+  //     onMouseUp(square, e);
+  //   },
+  //   [onMouseUp, square]
+  // );
 
   return (
     <div
@@ -33,7 +36,7 @@ export function Square(props: SquareProps) {
       data-index={square.index}
       data-rank={square.rank}
       data-file={square.file}
-      onMouseUp={handleMouseUp}
+      // onMouseUp={handleMouseUp}
     >
       <div className="label">
         {square.file}

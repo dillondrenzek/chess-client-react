@@ -13,42 +13,47 @@ interface BoardProps {
 export function Board(props: BoardProps) {
   const { fenString } = props;
 
-  const { fen, pieces, turn, dispatch } = useChessState(fenString);
+  // const chess = useChessGame(fenString);
+  const { fen, pieces: pieceRows } = useChessState(fenString);
+
+  const pieces = pieceRows.flatMap((row) => {
+    return row;
+  });
 
   const [activePiece, setActivePiece] = useState<Chess.Piece | null>(null);
   const [activeSquare, setActiveSquare] = useState<Chess.Square | null>(null);
 
-  const selectPiece = useCallback(
-    (piece: Chess.Piece, fromSquare: Chess.Square, e: MouseEvent) => {
-      console.log(
-        "Select piece:",
-        toReadableString(piece),
-        "@",
-        fromSquare.file + fromSquare.rank
-      );
-      if (!activePiece) {
-        setActivePiece(piece);
-        setActiveSquare(fromSquare);
-      }
-    },
-    [activePiece]
-  );
+  // const selectPiece = useCallback(
+  //   (piece: Chess.Piece, fromSquare: Chess.Square, e: MouseEvent) => {
+  //     console.log(
+  //       "Select piece:",
+  //       toReadableString(piece),
+  //       "@",
+  //       fromSquare.file + fromSquare.rank
+  //     );
+  //     if (!activePiece) {
+  //       setActivePiece(piece);
+  //       setActiveSquare(fromSquare);
+  //     }
+  //   },
+  //   [activePiece]
+  // );
 
-  const mouseUpOnSquare = useCallback(
-    (square: Chess.Square) => {
-      console.log("Mouse up:", square.file + square.rank);
+  // const mouseUpOnSquare = useCallback(
+  //   (square: Chess.Square) => {
+  //     console.log("Mouse up:", square.file + square.rank);
 
-      if (activePiece && activeSquare) {
-        dispatch({
-          type: "MOVE_PIECE",
-          payload: { fromSquare: activeSquare, toSquare: square },
-        });
-        setActivePiece(null);
-        setActiveSquare(null);
-      }
-    },
-    [activeSquare, activePiece, dispatch]
-  );
+  //     if (activePiece && activeSquare) {
+  //       dispatch({
+  //         type: "MOVE_PIECE",
+  //         payload: { fromSquare: activeSquare, toSquare: square },
+  //       });
+  //       setActivePiece(null);
+  //       setActiveSquare(null);
+  //     }
+  //   },
+  //   [activeSquare, activePiece, dispatch]
+  // );
 
   return (
     <div>
@@ -62,23 +67,26 @@ export function Board(props: BoardProps) {
                 <Piece
                   piece={piece}
                   square={square}
-                  onMouseDown={selectPiece}
+                  // onMouseDown={selectPiece}
                 />
               )}
-              <Square square={square} onMouseUp={mouseUpOnSquare} />
+              <Square
+                square={square}
+                // onMouseUp={mouseUpOnSquare}
+              />
             </>
           );
         })}
       </div>
       <div>
-        <div>
+        {/* <div>
           Turn:{" "}
           {turn === Chess.PieceColor.Black
             ? "Black"
             : turn === Chess.PieceColor.White
             ? "White"
             : ""}
-        </div>
+        </div> */}
         <div>FenString: {fen}</div>
         <div>
           Active: {activePiece?.color}
