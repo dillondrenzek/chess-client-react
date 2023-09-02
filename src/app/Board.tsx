@@ -1,4 +1,4 @@
-import { useCallback, useState, MouseEvent } from "react";
+import { useCallback, useState, MouseEvent, useEffect } from "react";
 import { Piece } from "../app/Piece";
 import { Square } from "../app/Square";
 import * as Chess from "../lib/chess-types";
@@ -14,7 +14,7 @@ export function Board(props: BoardProps) {
   const { fenString } = props;
 
   // const chess = useChessGame(fenString);
-  const { fen, pieces: pieceRows } = useChessState(fenString);
+  const { fen, pieces: pieceRows, turn, client } = useChessState(fenString);
 
   const pieces = pieceRows.flatMap((row) => {
     return row;
@@ -22,6 +22,12 @@ export function Board(props: BoardProps) {
 
   const [activePiece, setActivePiece] = useState<Chess.Piece | null>(null);
   const [activeSquare, setActiveSquare] = useState<Chess.Square | null>(null);
+
+  // Log the board in ascii
+  const boardInAscii = client.ascii();
+  useEffect(() => {
+    console.log(boardInAscii);
+  }, [boardInAscii]);
 
   // const selectPiece = useCallback(
   //   (piece: Chess.Piece, fromSquare: Chess.Square, e: MouseEvent) => {
@@ -79,14 +85,14 @@ export function Board(props: BoardProps) {
         })}
       </div>
       <div>
-        {/* <div>
+        <div>
           Turn:{" "}
           {turn === Chess.PieceColor.Black
             ? "Black"
             : turn === Chess.PieceColor.White
             ? "White"
             : ""}
-        </div> */}
+        </div>
         <div>FenString: {fen}</div>
         <div>
           Active: {activePiece?.color}

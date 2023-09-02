@@ -83,6 +83,8 @@ export function useChessState(fenString: string) {
   return {
     fen: chess.fen(),
     pieces: chess.board(),
+    turn: chess.turn(),
+    client: chess,
     // ...state,
     // dispatch,
     // input,
