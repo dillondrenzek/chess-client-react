@@ -17,28 +17,28 @@ function getBoardPositionCSS(row: number, column: number): React.CSSProperties {
   };
 }
 
-interface PieceProps {
+export interface PieceProps {
   piece: ChessJs.Piece;
   square: Chess.Square;
-  // onMouseDown: (
-  //   piece: Chess.Piece,
-  //   square: Chess.Square,
-  //   mouseEvent: React.MouseEvent
-  // ) => void;
+  onMouseDown: (
+    piece: ChessJs.Piece,
+    square: Chess.Square,
+    mouseEvent: React.MouseEvent
+  ) => void;
 }
 
 export function Piece(props: PieceProps) {
-  const { piece, square } = props;
+  const { piece, square, onMouseDown } = props;
 
   const { row, column } = square;
 
-  // const handleMouseDown = useCallback(
-  //   (e: MouseEvent) => {
-  //     console.log("mousedown", e);
-  //     onMouseDown(piece, square, e);
-  //   },
-  //   [onMouseDown, piece, square]
-  // );
+  const handleMouseDown = useCallback(
+    (e: MouseEvent) => {
+      console.log("mousedown", e);
+      onMouseDown(piece, square, e);
+    },
+    [onMouseDown, piece, square]
+  );
 
   return (
     <div
@@ -47,7 +47,7 @@ export function Piece(props: PieceProps) {
         ...getBoardPositionCSS(row, column),
         ...getPieceGraphicCSS(piece),
       }}
-      // onMouseDown={handleMouseDown}
+      onMouseDown={handleMouseDown}
     />
   );
 }

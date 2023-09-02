@@ -1,7 +1,8 @@
 import { useCallback, useState, MouseEvent, useEffect } from "react";
-import { Piece } from "../app/Piece";
+import { Piece, PieceProps } from "../app/Piece";
 import { Square } from "../app/Square";
 import * as Chess from "../lib/chess-types";
+import * as ChessJs from "chess.js";
 import { useChessState } from "../hooks/use-chess-state";
 import { getSquareForIndex } from "../lib/chess-fns";
 import { toReadableString } from "../lib/logging";
@@ -12,38 +13,58 @@ interface BoardProps {
 
 export function Board(props: BoardProps) {
   const { fenString } = props;
-
-  // const chess = useChessGame(fenString);
   const { fen, pieces: pieceRows, turn, client } = useChessState(fenString);
 
   const pieces = pieceRows.flatMap((row) => {
     return row;
   });
 
-  const [activePiece, setActivePiece] = useState<Chess.Piece | null>(null);
-  const [activeSquare, setActiveSquare] = useState<Chess.Square | null>(null);
-
   // Log the board in ascii
+  //////////////////////////
+
   const boardInAscii = client.ascii();
   useEffect(() => {
     console.log(boardInAscii);
   }, [boardInAscii]);
 
-  // const selectPiece = useCallback(
-  //   (piece: Chess.Piece, fromSquare: Chess.Square, e: MouseEvent) => {
-  //     console.log(
-  //       "Select piece:",
-  //       toReadableString(piece),
-  //       "@",
-  //       fromSquare.file + fromSquare.rank
-  //     );
-  //     if (!activePiece) {
-  //       setActivePiece(piece);
-  //       setActiveSquare(fromSquare);
-  //     }
-  //   },
-  //   [activePiece]
-  // );
+  // Track mouse coordinates
+  ///////////////////////////
+
+  // TODO: variables that track the mouse's coordinates on the board
+
+  // Select Active piece
+  ///////////////////////
+
+  const [activePiece, setActivePiece] = useState<Chess.Piece | null>(null);
+  const [activeSquare, setActiveSquare] = useState<Chess.Square | null>(null);
+
+  const selectPiece = (
+    piece: ChessJs.Piece,
+    fromSquare: Chess.Square,
+    e: MouseEvent
+  ) => {
+    console.log(
+      "Select piece:",
+      toReadableString(piece),
+      "@",
+      fromSquare.file + fromSquare.rank
+    );
+    if (!activePiece) {
+      setActivePiece(piece);
+      setActiveSquare(fromSquare);
+    }
+  };
+
+  const handleMouseDownOnPiece: PieceProps["onMouseDown"] = (
+    piece,
+    square,
+    mouseEvent
+  ) => {};
+
+  const handleMouseUp = () => {};
+
+  const handleMouseLeave = () => {};
+  const handleMouseEnter = () => {};
 
   // const mouseUpOnSquare = useCallback(
   //   (square: Chess.Square) => {
@@ -63,7 +84,12 @@ export function Board(props: BoardProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "row" }}>
-      <div className="chess-board">
+      <div
+        className="chess-board"
+        onMouseUp={handleMouseUp}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         {pieces.map((piece, i) => {
           const square = getSquareForIndex(i);
 
@@ -73,7 +99,7 @@ export function Board(props: BoardProps) {
                 <Piece
                   piece={piece}
                   square={square}
-                  // onMouseDown={selectPiece}
+                  onMouseDown={handleMouseDownOnPiece}
                 />
               )}
               <Square
@@ -85,14 +111,7 @@ export function Board(props: BoardProps) {
         })}
       </div>
       <div>
-        <div>
-          Turn:{" "}
-          {turn === Chess.PieceColor.Black
-            ? "Black"
-            : turn === Chess.PieceColor.White
-            ? "White"
-            : ""}
-        </div>
+        <div>Turn: {turn === "b" ? "Black" : turn === "w" ? "White" : ""}</div>
         <div>FenString: {fen}</div>
         <div>
           Active: {activePiece?.color}

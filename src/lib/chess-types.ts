@@ -1,34 +1,4 @@
-/**
- * @deprecated
- */
-export enum PieceType {
-  Pawn = "p",
-  Rook = "r",
-  Knight = "n",
-  Bishop = "b",
-  Queen = "q",
-  King = "k",
-}
-
-/**
- * @deprecated
- */
-export enum PieceColor {
-  Black = "b",
-  White = "w",
-}
-
-/**
- * @deprecated
- */
-export interface Piece {
-  type: PieceType;
-  color: PieceColor;
-}
-
-export function isPiece(value: unknown): value is Piece {
-  return value instanceof Object && "type" in value && "color" in value;
-}
+export * from "./chess/types/piece";
 
 export interface Square {
   row: number;
@@ -44,11 +14,3 @@ export type BoardFile = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H";
 export type BoardRank = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export type SquareColor = "light" | "dark";
-
-export type PieceArray = (Piece | null)[];
-
-export interface ChessState {
-  pieces: PieceArray;
-
-  turn: PieceColor;
-}

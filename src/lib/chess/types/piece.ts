@@ -1,19 +1,18 @@
+import * as ChessJs from "chess.js";
+
 /**
- *
+ * Describes a chess piece
  */
-export interface Piece {
-  type: PieceType;
-  color: PieceColor;
-}
+export type Piece = ChessJs.Piece;
 
-export type PieceType =
-  | "p" // Pawn
-  | "r" // Rook
-  | "n" // Knight
-  | "b" // Bishop
-  | "q" // Queen
-  | "k"; // King
+/**
+ * Case-insensitive chess piece type
+ * @example 'p' // Pawn
+ */
+export type PieceType = ChessJs.PieceSymbol;
 
-export type PieceColor =
-  | "b" // Black
-  | "w"; // White
+/**
+ * Case-insensitive chess piece color
+ * @example 'b' // Black
+ */
+export type PieceColor = ChessJs.Color;
