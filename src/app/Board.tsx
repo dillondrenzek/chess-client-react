@@ -62,7 +62,7 @@ export function Board(props: BoardProps) {
   // );
 
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "row" }}>
       <div className="chess-board">
         {pieces.map((piece, i) => {
           const square = getSquareForIndex(i);
