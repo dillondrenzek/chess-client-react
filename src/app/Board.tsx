@@ -1,6 +1,6 @@
 import { useCallback, useState, MouseEvent, useEffect, useRef } from "react";
 import { Piece, PieceProps } from "../app/Piece";
-import { Square } from "../app/Square";
+import { Square, SquareProps } from "../app/Square";
 import * as Chess from "../lib/chess-types";
 import * as ChessJs from "chess.js";
 import { useChessState } from "../hooks/use-chess-state";
@@ -15,10 +15,6 @@ export function Board(props: BoardProps) {
   const { fenString } = props;
   const { fen, pieces: pieceRows, turn, client } = useChessState(fenString);
 
-  const pieces = pieceRows.flatMap((row) => {
-    return row;
-  });
-
   // Log the board in ascii
   //////////////////////////
 
@@ -32,6 +28,9 @@ export function Board(props: BoardProps) {
 
   // TODO: variables that track the mouse's coordinates on the board
 
+  const [mousePosX, setMousePosX] = useState<number>(0);
+  const [mousePosY, setMousePosY] = useState<number>(0);
+
   const boardElement = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,17 +38,30 @@ export function Board(props: BoardProps) {
       return;
     }
 
+    // TODO: debounce this event
     const dispose = boardElement.current.addEventListener(
       "mousemove",
       (ev: globalThis.MouseEvent) => {
-        console.log("mouse move:", ev.clientX, ev.clientY);
-        console.log(
-          "board coords",
-          boardElement.current?.clientTop,
-          boardElement.current?.clientLeft,
-          boardElement.current?.clientWidth,
-          boardElement.current?.clientHeight
-        );
+        const boardBoundingRect = boardElement.current?.getBoundingClientRect();
+
+        const mouseX = ev.clientX;
+        const mouseY = ev.clientY;
+
+        const boardWidth = boardBoundingRect?.width || 0;
+        const boardHeight = boardBoundingRect?.height || 0;
+        const boardMinX = boardBoundingRect?.left || 0;
+        const boardMinY = boardBoundingRect?.y || 0;
+
+        const mousePosX = (mouseX - boardMinX) / boardWidth;
+        const mousePosY = (mouseY - boardMinY) / boardHeight;
+
+        setMousePosX(mousePosX);
+        setMousePosY(mousePosY);
+
+        // console.log("mouse position", mousePosX, mousePosY);
+
+        // console.log("mouse move:", ev.clientX, ev.clientY);
+        // console.log("board coords", boardBoundingRect);
       }
     );
 
@@ -59,7 +71,7 @@ export function Board(props: BoardProps) {
   // Select Active piece
   ///////////////////////
 
-  const [activePiece, setActivePiece] = useState<Chess.Piece | null>(null);
+  const [activePiece, setActivePiece] = useState<ChessJs.Piece | null>(null);
   const [activeSquare, setActiveSquare] = useState<Chess.Square | null>(null);
 
   const selectPiece = (
@@ -73,17 +85,25 @@ export function Board(props: BoardProps) {
       "@",
       fromSquare.file + fromSquare.rank
     );
-    if (!activePiece) {
-      setActivePiece(piece);
-      setActiveSquare(fromSquare);
-    }
+    // if (!activePiece) {
+    setActivePiece(piece);
+    setActiveSquare(fromSquare);
+    // }
   };
 
   const handleMouseDownOnPiece: PieceProps["onMouseDown"] = (
     piece,
     square,
     mouseEvent
-  ) => {};
+  ) => {
+    console.log("Mousedown:", piece, square, mouseEvent);
+    selectPiece(piece, square, mouseEvent);
+  };
+
+  const handleMouseDownOnSquare: SquareProps["onMouseDown"] = (square, ev) => {
+    setActivePiece(null);
+    setActiveSquare(square);
+  };
 
   const handleMouseUp = () => {};
 
@@ -115,32 +135,42 @@ export function Board(props: BoardProps) {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        {pieces.map((piece, i) => {
-          const square = getSquareForIndex(i);
+        {pieceRows
+          .flatMap((row) => row)
+          .map((piece, i) => {
+            const square = getSquareForIndex(i);
 
-          return (
-            <>
-              {piece && (
-                <Piece
-                  piece={piece}
+            return (
+              <>
+                {piece && (
+                  <Piece
+                    piece={piece}
+                    square={square}
+                    onMouseDown={handleMouseDownOnPiece}
+                  />
+                )}
+                <Square
                   square={square}
-                  onMouseDown={handleMouseDownOnPiece}
+                  onMouseDown={handleMouseDownOnSquare}
+                  // onMouseUp={mouseUpOnSquare}
                 />
-              )}
-              <Square
-                square={square}
-                // onMouseUp={mouseUpOnSquare}
-              />
-            </>
-          );
-        })}
+              </>
+            );
+          })}
       </div>
       <div>
         <div>Turn: {turn === "b" ? "Black" : turn === "w" ? "White" : ""}</div>
         <div>FenString: {fen}</div>
         <div>
-          Active: {activePiece?.color}
+          Active piece: {activePiece?.color}
           {activePiece?.type}
+        </div>
+        <div>
+          Active square: {activeSquare?.file}
+          {activeSquare?.rank}
+        </div>
+        <div>
+          Mouse position: {mousePosX} {mousePosY}
         </div>
       </div>
     </div>

@@ -9,16 +9,20 @@ function getBoardPositionCSS(row: number, column: number): CSSProperties {
   };
 }
 
-interface SquareProps {
+export interface SquareProps {
   square: Chess.Square;
+  onMouseDown: (square: Chess.Square, e: MouseEvent) => void;
   // onMouseUp: (square: Chess.Square, e: MouseEvent) => void;
 }
 
 export function Square(props: SquareProps) {
-  const {
-    square,
-    // onMouseUp
-  } = props;
+  const { square, onMouseDown } = props;
+
+  const handleMouseDownOnSquare: React.MouseEventHandler<HTMLDivElement> = (
+    ev
+  ) => {
+    onMouseDown?.(square, ev);
+  };
 
   // const handleMouseUp = useCallback(
   //   (e: MouseEvent) => {
@@ -36,6 +40,7 @@ export function Square(props: SquareProps) {
       data-index={square.index}
       data-rank={square.rank}
       data-file={square.file}
+      onMouseDown={handleMouseDownOnSquare}
       // onMouseUp={handleMouseUp}
     >
       <div className="label">
