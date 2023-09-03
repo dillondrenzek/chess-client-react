@@ -11,12 +11,13 @@ function getBoardPositionCSS(row: number, column: number): CSSProperties {
 
 export interface SquareProps {
   square: Chess.Square;
+  isActive: boolean;
   onMouseDown: (square: Chess.Square, e: MouseEvent) => void;
   // onMouseUp: (square: Chess.Square, e: MouseEvent) => void;
 }
 
 export function Square(props: SquareProps) {
-  const { square, onMouseDown } = props;
+  const { square, isActive, onMouseDown } = props;
 
   const handleMouseDownOnSquare: React.MouseEventHandler<HTMLDivElement> = (
     ev
@@ -33,7 +34,9 @@ export function Square(props: SquareProps) {
 
   return (
     <div
-      className={`square ${square.color === "dark" ? "dark" : "light"}`}
+      className={`square ${square.color === "dark" ? "dark" : "light"} ${
+        isActive ? "active" : ""
+      }`}
       style={{
         ...getBoardPositionCSS(square.row, square.column),
       }}

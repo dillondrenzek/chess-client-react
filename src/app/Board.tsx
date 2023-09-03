@@ -126,6 +126,15 @@ export function Board(props: BoardProps) {
   //   [activeSquare, activePiece, dispatch]
   // );
 
+  const moves = client.moves({
+    square: (activeSquare
+      ? (activeSquare.file + activeSquare.rank).toLowerCase()
+      : undefined) as ChessJs.Square,
+    piece: activePiece?.type,
+  });
+
+  // console.log(client.board(), client.moves({ square: "e7", piece: "p" }));
+
   return (
     <div style={{ display: "flex", flexDirection: "row" }}>
       <div
@@ -151,6 +160,10 @@ export function Board(props: BoardProps) {
                 )}
                 <Square
                   square={square}
+                  isActive={
+                    square.file + square.row ===
+                    (activeSquare ? activeSquare.file + activeSquare.row : null)
+                  }
                   onMouseDown={handleMouseDownOnSquare}
                   // onMouseUp={mouseUpOnSquare}
                 />
@@ -166,11 +179,20 @@ export function Board(props: BoardProps) {
           {activePiece?.type}
         </div>
         <div>
-          Active square: {activeSquare?.file}
-          {activeSquare?.rank}
+          Active square:{" "}
+          {activeSquare ? activeSquare.file + activeSquare.rank : ""}
         </div>
         <div>
           Mouse position: {mousePosX} {mousePosY}
+        </div>
+        <div>
+          Moves: {moves.length}{" "}
+          {/* {client.get(
+            activePiece && activeSquare
+              ? activeSquare.file + activeSquare.rank
+              : ""
+          ).} */}
+          {moves.map((move) => JSON.stringify(move)).join(" ")}
         </div>
       </div>
     </div>

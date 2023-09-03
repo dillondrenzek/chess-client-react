@@ -1,4 +1,5 @@
 import * as Chess from "./chess-types";
+import * as ChessJs from "chess.js";
 
 /**
  * Given an index, return the zero-indexed column number
@@ -28,7 +29,7 @@ export function getSquareForIndex(index: number): Chess.Square {
     row,
     column,
     color: index % 2 === (row % 2 === 0 ? 0 : 1) ? "dark" : "light",
-    rank: (row + 1) as Chess.BoardRank,
+    rank: (8 - row) as Chess.BoardRank,
     file: "ABCDEFGH".charAt(column) as Chess.BoardFile,
   };
 }
