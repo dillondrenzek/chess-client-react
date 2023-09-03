@@ -10,8 +10,8 @@ declare global {
 
 window.chess = Chess;
 
-export function useChessState(fenString: string) {
-  const chess = useMemo(() => new Chess(fenString), [fenString]);
+export function useChessState(fenString: string | null) {
+  const chess = useMemo(() => new Chess(fenString || undefined), [fenString]);
 
   return {
     fen: chess.fen(),

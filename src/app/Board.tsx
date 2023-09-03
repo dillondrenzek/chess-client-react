@@ -1,4 +1,4 @@
-import { useCallback, useState, MouseEvent, useEffect } from "react";
+import { useCallback, useState, MouseEvent, useEffect, useRef } from "react";
 import { Piece, PieceProps } from "../app/Piece";
 import { Square } from "../app/Square";
 import * as Chess from "../lib/chess-types";
@@ -8,7 +8,7 @@ import { getSquareForIndex } from "../lib/chess-fns";
 import { toReadableString } from "../lib/logging";
 
 interface BoardProps {
-  fenString: string;
+  fenString: string | null;
 }
 
 export function Board(props: BoardProps) {
@@ -31,6 +31,30 @@ export function Board(props: BoardProps) {
   ///////////////////////////
 
   // TODO: variables that track the mouse's coordinates on the board
+
+  const boardElement = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!boardElement.current) {
+      return;
+    }
+
+    const dispose = boardElement.current.addEventListener(
+      "mousemove",
+      (ev: globalThis.MouseEvent) => {
+        console.log("mouse move:", ev.clientX, ev.clientY);
+        console.log(
+          "board coords",
+          boardElement.current?.clientTop,
+          boardElement.current?.clientLeft,
+          boardElement.current?.clientWidth,
+          boardElement.current?.clientHeight
+        );
+      }
+    );
+
+    return dispose;
+  }, []);
 
   // Select Active piece
   ///////////////////////
@@ -86,6 +110,7 @@ export function Board(props: BoardProps) {
     <div style={{ display: "flex", flexDirection: "row" }}>
       <div
         className="chess-board"
+        ref={boardElement}
         onMouseUp={handleMouseUp}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
