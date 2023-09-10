@@ -1,11 +1,11 @@
-import { useCallback, useState, MouseEvent, useEffect, useRef } from "react";
-import { Piece, PieceProps } from "../app/Piece";
-import { Square, SquareProps } from "../app/Square";
-import * as Chess from "../lib/chess-types";
-import * as ChessJs from "chess.js";
-import { useChessState } from "../hooks/use-chess-state";
-import { getSquareForIndex } from "../lib/chess-fns";
-import { toReadableString } from "../lib/logging";
+import { useCallback, useState, MouseEvent, useEffect, useRef } from 'react';
+import { Piece, PieceProps } from '../app/Piece';
+import { Square, SquareProps, SquareState } from '../app/Square';
+import * as Chess from '../lib/chess-types';
+import * as ChessJs from 'chess.js';
+import { useChessState } from '../hooks/use-chess-state';
+import { getSquareForIndex } from '../lib/chess-fns';
+import { toReadableString } from '../lib/logging';
 
 interface BoardProps {
   fenString: string | null;
@@ -40,7 +40,7 @@ export function Board(props: BoardProps) {
 
     // TODO: debounce this event
     const dispose = boardElement.current.addEventListener(
-      "mousemove",
+      'mousemove',
       (ev: globalThis.MouseEvent) => {
         const boardBoundingRect = boardElement.current?.getBoundingClientRect();
 
@@ -80,9 +80,9 @@ export function Board(props: BoardProps) {
     e: MouseEvent
   ) => {
     console.log(
-      "Select piece:",
+      'Select piece:',
       toReadableString(piece),
-      "@",
+      '@',
       fromSquare.file + fromSquare.rank
     );
     // if (!activePiece) {
@@ -91,16 +91,16 @@ export function Board(props: BoardProps) {
     // }
   };
 
-  const handleMouseDownOnPiece: PieceProps["onMouseDown"] = (
+  const handleMouseDownOnPiece: PieceProps['onMouseDown'] = (
     piece,
     square,
     mouseEvent
   ) => {
-    console.log("Mousedown:", piece, square, mouseEvent);
+    console.log('Mousedown:', piece, square, mouseEvent);
     selectPiece(piece, square, mouseEvent);
   };
 
-  const handleMouseDownOnSquare: SquareProps["onMouseDown"] = (square, ev) => {
+  const handleMouseDownOnSquare: SquareProps['onMouseDown'] = (square, ev) => {
     setActivePiece(null);
     setActiveSquare(square);
   };
@@ -136,9 +136,9 @@ export function Board(props: BoardProps) {
   // console.log(client.board(), client.moves({ square: "e7", piece: "p" }));
 
   return (
-    <div style={{ display: "flex", flexDirection: "row" }}>
+    <div style={{ display: 'flex', flexDirection: 'row' }}>
       <div
-        className="chess-board"
+        className='chess-board'
         ref={boardElement}
         onMouseUp={handleMouseUp}
         onMouseEnter={handleMouseEnter}
@@ -148,6 +148,22 @@ export function Board(props: BoardProps) {
           .flatMap((row) => row)
           .map((piece, i) => {
             const square = getSquareForIndex(i);
+
+            const state = ((): SquareState => {
+              if (!activeSquare) {
+                return SquareState.None;
+              }
+
+              // Is active
+              if (
+                square.file + square.row ===
+                (activeSquare ? activeSquare.file + activeSquare.row : null)
+              ) {
+                return SquareState.Active;
+              }
+
+              return SquareState.None;
+            })();
 
             return (
               <>
@@ -160,39 +176,35 @@ export function Board(props: BoardProps) {
                 )}
                 <Square
                   square={square}
-                  isActive={
-                    square.file + square.row ===
-                    (activeSquare ? activeSquare.file + activeSquare.row : null)
-                  }
+                  state={state}
                   onMouseDown={handleMouseDownOnSquare}
-                  // onMouseUp={mouseUpOnSquare}
                 />
               </>
             );
           })}
       </div>
       <div>
-        <div>Turn: {turn === "b" ? "Black" : turn === "w" ? "White" : ""}</div>
+        <div>Turn: {turn === 'b' ? 'Black' : turn === 'w' ? 'White' : ''}</div>
         <div>FenString: {fen}</div>
         <div>
           Active piece: {activePiece?.color}
           {activePiece?.type}
         </div>
         <div>
-          Active square:{" "}
-          {activeSquare ? activeSquare.file + activeSquare.rank : ""}
+          Active square:{' '}
+          {activeSquare ? activeSquare.file + activeSquare.rank : ''}
         </div>
         <div>
           Mouse position: {mousePosX} {mousePosY}
         </div>
         <div>
-          Moves: {moves.length}{" "}
+          Moves: {moves.length}{' '}
           {/* {client.get(
             activePiece && activeSquare
               ? activeSquare.file + activeSquare.rank
               : ""
           ).} */}
-          {moves.map((move) => JSON.stringify(move)).join(" ")}
+          {moves.map((move) => JSON.stringify(move)).join(' ')}
         </div>
       </div>
     </div>

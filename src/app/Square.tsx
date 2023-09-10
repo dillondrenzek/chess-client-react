@@ -1,5 +1,10 @@
-import { useCallback, MouseEvent, CSSProperties } from "react";
-import * as Chess from "../lib/chess-types";
+import { useCallback, MouseEvent, CSSProperties } from 'react';
+import * as Chess from '../lib/chess-types';
+
+export enum SquareState {
+  None = 0,
+  Active = 1,
+}
 
 function getBoardPositionCSS(row: number, column: number): CSSProperties {
   const transformX = `${column * 100}%`;
@@ -11,13 +16,13 @@ function getBoardPositionCSS(row: number, column: number): CSSProperties {
 
 export interface SquareProps {
   square: Chess.Square;
-  isActive: boolean;
+  state: SquareState;
   onMouseDown: (square: Chess.Square, e: MouseEvent) => void;
   // onMouseUp: (square: Chess.Square, e: MouseEvent) => void;
 }
 
 export function Square(props: SquareProps) {
-  const { square, isActive, onMouseDown } = props;
+  const { square, state, onMouseDown } = props;
 
   const handleMouseDownOnSquare: React.MouseEventHandler<HTMLDivElement> = (
     ev
@@ -34,8 +39,8 @@ export function Square(props: SquareProps) {
 
   return (
     <div
-      className={`square ${square.color === "dark" ? "dark" : "light"} ${
-        isActive ? "active" : ""
+      className={`square ${square.color === 'dark' ? 'dark' : 'light'} ${
+        state === SquareState.Active ? 'active' : ''
       }`}
       style={{
         ...getBoardPositionCSS(square.row, square.column),
@@ -46,7 +51,7 @@ export function Square(props: SquareProps) {
       onMouseDown={handleMouseDownOnSquare}
       // onMouseUp={handleMouseUp}
     >
-      <div className="label">
+      <div className='label'>
         {square.file}
         {square.rank}
       </div>
