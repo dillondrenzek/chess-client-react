@@ -1,7 +1,8 @@
 import { useCallback, MouseEvent } from "react";
 import * as Chess from "../lib/chess-types";
+import * as ChessJs from "chess.js";
 
-function getPieceGraphicCSS(piece: Chess.Piece): React.CSSProperties {
+function getPieceGraphicCSS(piece: ChessJs.Piece): React.CSSProperties {
   const pieceCode = `${piece.color}${piece.type}`;
   return {
     backgroundImage: `url(https://images.chesscomfiles.com/chess-themes/pieces/neo_wood/150/${pieceCode}.png)`,
@@ -16,11 +17,11 @@ function getBoardPositionCSS(row: number, column: number): React.CSSProperties {
   };
 }
 
-interface PieceProps {
-  piece: Chess.Piece;
+export interface PieceProps {
+  piece: ChessJs.Piece;
   square: Chess.Square;
   onMouseDown: (
-    piece: Chess.Piece,
+    piece: ChessJs.Piece,
     square: Chess.Square,
     mouseEvent: React.MouseEvent
   ) => void;

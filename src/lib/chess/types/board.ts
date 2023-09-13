@@ -1,9 +1,8 @@
-export * from "./chess/types/piece";
+export interface Board {
+  squares: Square[];
+}
 
 export interface Square {
-  row: number;
-  column: number;
-  index: number;
   rank: BoardRank;
   file: BoardFile;
   color: SquareColor;

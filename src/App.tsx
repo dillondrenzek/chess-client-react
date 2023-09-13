@@ -1,13 +1,17 @@
 import "./App.scss";
-import { DEFAULT_FEN_STRING } from "./lib/parse-fen";
 import { Board } from "./app/Board";
 
 function App() {
-  const fenString =
-    new URL(window.location.href).searchParams.get("fen") ?? DEFAULT_FEN_STRING;
+  const fenString = new URL(window.location.href).searchParams.get("fen");
 
   return (
-    <div style={{ display: "flex", flexDirection: "row" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
+      }}
+    >
       <Board fenString={fenString} />
     </div>
   );
