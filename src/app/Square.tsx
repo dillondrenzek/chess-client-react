@@ -1,4 +1,4 @@
-import { useCallback, MouseEvent, CSSProperties } from 'react';
+import { useCallback, MouseEvent, CSSProperties, useMemo } from 'react';
 import * as Chess from '../lib/chess-types';
 
 export enum SquareState {
@@ -6,50 +6,45 @@ export enum SquareState {
   Active = 1,
 }
 
-function getBoardPositionCSS(row: number, column: number): CSSProperties {
-  const transformX = `${column * 100}%`;
-  const transformY = `${row * 100}%`;
-  return {
-    transform: `translate(${transformX}, ${transformY})`,
-  };
-}
-
 export interface SquareProps {
   square: Chess.Square;
-  state: SquareState;
-  onMouseDown: (square: Chess.Square, e: MouseEvent) => void;
-  // onMouseUp: (square: Chess.Square, e: MouseEvent) => void;
 }
 
 export function Square(props: SquareProps) {
-  const { square, state, onMouseDown } = props;
+  const { square } = props;
 
-  const handleMouseDownOnSquare: React.MouseEventHandler<HTMLDivElement> = (
+  const handleMouseDownOnSquare: React.MouseEventHandler<HTMLDivElement> = useCallback((
     ev
   ) => {
-    onMouseDown?.(square, ev);
-  };
+    console.log('Mousedown (Square):', square, ev);
+  }, [square]);
 
-  // const handleMouseUp = useCallback(
-  //   (e: MouseEvent) => {
-  //     onMouseUp(square, e);
-  //   },
-  //   [onMouseUp, square]
-  // );
+  const handleMouseUp = useCallback(
+    (e: MouseEvent) => {
+      console.log("Mouseup (Square):", square, e);
+    },
+    [square]
+  );
+
+  const squareStyle = useMemo<React.CSSProperties>(() => {
+    const { row, column } = square;
+    const transformX = `${column / 8 * 100}%`;
+    const transformY = `${row / 8 * 100}%`;
+    return {
+      top: transformY,
+      left: transformX,
+    };
+  }, [square]);
 
   return (
     <div
-      className={`square ${square.color === 'dark' ? 'dark' : 'light'} ${
-        state === SquareState.Active ? 'active' : ''
-      }`}
-      style={{
-        ...getBoardPositionCSS(square.row, square.column),
-      }}
+      className={`square ${square.color === 'dark' ? 'dark' : 'light'}`}
+      style={squareStyle}
       data-index={square.index}
       data-rank={square.rank}
       data-file={square.file}
       onMouseDown={handleMouseDownOnSquare}
-      // onMouseUp={handleMouseUp}
+      onMouseUp={handleMouseUp}
     >
       <div className='label'>
         {square.file}
