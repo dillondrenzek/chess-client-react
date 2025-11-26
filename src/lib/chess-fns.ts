@@ -17,6 +17,32 @@ export function getRowForIndex(index: number): number {
 
 /**
  *
+ * @param file string representing a file (case-insensitve)
+ * @returns Zero-indexed value for the column
+ */
+export function getColumnForFile(file: string): number | null {
+  const value = parseInt(file);
+  console.log("rank", value);
+  if (value >= 1 && value <= 8) {
+    return value - 1;
+  }
+
+  return null;
+}
+
+/**
+ * Returns a zero-indexed value for the row given a string rank like "1" or "8"
+ * @param rank
+ */
+export function getRowForRank(rank: string): number | null {
+  const index = "ABCDEFGH".indexOf(rank.toUpperCase());
+
+  console.log("column", index);
+  return index >= 0 ? index : null;
+}
+
+/**
+ *
  * @param index On a Chess board
  * @returns
  */

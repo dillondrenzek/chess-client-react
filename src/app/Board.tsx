@@ -1,15 +1,30 @@
-import { useCallback, useState, MouseEvent, useEffect, useRef, useMemo } from 'react';
-import { Piece, PieceProps } from '../app/Piece';
-import { Square, SquareProps, SquareState } from '../app/Square';
-import * as Chess from '../lib/chess-types';
-import * as ChessJs from 'chess.js';
-import { useChessState } from '../hooks/use-chess-state';
-import { getSquareForIndex } from '../lib/chess-fns';
-import { toReadableString } from '../lib/logging';
-import { useBoardStore } from '../hooks/useBoardStore';
-import { render } from '@testing-library/react';
+import {
+  useCallback,
+  useState,
+  MouseEvent,
+  useEffect,
+  useRef,
+  useMemo,
+  CSSProperties,
+} from "react";
+import { Piece, PieceProps } from "../app/Piece";
+import { Square, SquareProps, SquareState } from "../app/Square";
+import * as Chess from "../lib/chess-types";
+import * as ChessJs from "chess.js";
+import { useChessState } from "../hooks/use-chess-state";
+import {
+  getColumnForFile,
+  getRowForRank,
+  getSquareForIndex,
+} from "../lib/chess-fns";
+import { toReadableString } from "../lib/logging";
+import { useBoardStore } from "../hooks/useBoardStore";
+import { render } from "@testing-library/react";
 
-function useMousePositionListener(boardElement: React.RefObject<HTMLDivElement>, setMousePosition: (x: number, y: number) => void) {
+function useMousePositionListener(
+  boardElement: React.RefObject<HTMLDivElement>,
+  setMousePosition: (x: number, y: number) => void
+) {
   useEffect(() => {
     if (!boardElement.current) {
       return;
@@ -17,7 +32,7 @@ function useMousePositionListener(boardElement: React.RefObject<HTMLDivElement>,
 
     // TODO: debounce this event
     const dispose = boardElement.current.addEventListener(
-      'mousemove',
+      "mousemove",
       (ev: globalThis.MouseEvent) => {
         const boardBoundingRect = boardElement.current?.getBoundingClientRect();
 
@@ -26,16 +41,13 @@ function useMousePositionListener(boardElement: React.RefObject<HTMLDivElement>,
 
         const boardWidth = boardBoundingRect?.width || 0;
         const boardHeight = boardBoundingRect?.height || 0;
-        const boardMinX = boardBoundingRect?.left || 0;
+        const boardMinX = boardBoundingRect?.x || 0;
         const boardMinY = boardBoundingRect?.y || 0;
 
         const mousePosX = (mouseX - boardMinX) / boardWidth;
         const mousePosY = (mouseY - boardMinY) / boardHeight;
 
-        setMousePosition(
-          mousePosX,
-          mousePosY
-        );
+        setMousePosition(mousePosX, mousePosY);
 
         // console.log("mouse position", mousePosX, mousePosY);
 
@@ -45,9 +57,8 @@ function useMousePositionListener(boardElement: React.RefObject<HTMLDivElement>,
     );
 
     return dispose;
-  }, []);
+  }, [boardElement, setMousePosition]);
 }
-
 
 interface BoardProps {
   fenString: string | null;
@@ -69,42 +80,137 @@ export function Board(props: BoardProps) {
   // Track mouse coordinates
   ///////////////////////////
 
+  const [selectedPiece, setSelectedPiece] = useState<{
+    square: ChessJs.Square;
+    type: ChessJs.PieceSymbol;
+    color: ChessJs.Color;
+  } | null>(null);
+
   // TODO: variables that track the mouse's coordinates on the board
 
+  const pieces: {
+    piece: {
+      square: ChessJs.Square;
+      type: ChessJs.PieceSymbol;
+      color: ChessJs.Color;
+    };
+    positionStyle: CSSProperties;
+  }[] = useMemo(() => {
+    const chessJsPieces: {
+      square: ChessJs.Square;
+      type: ChessJs.PieceSymbol;
+      color: ChessJs.Color;
+    }[] = pieceRows
+      .flatMap((piecesByRow) => {
+        return piecesByRow;
+      })
+      .filter((p) => !!p) as {
+      square: ChessJs.Square;
+      type: ChessJs.PieceSymbol;
+      color: ChessJs.Color;
+    }[];
+    return chessJsPieces.map((piece) => {
+      const isSelected =
+        selectedPiece &&
+        piece.color === selectedPiece.color &&
+        piece.square === selectedPiece.square &&
+        piece.type === selectedPiece.type;
+      const positionStyle: CSSProperties = (() => {
+        const { row, column } = (() => {
+          const [rank, file] = [piece.square.charAt(0), piece.square.charAt(1)];
+          const row = getRowForRank(rank);
+          const column = getColumnForFile(file);
+          console.log(piece.square, rank, file, row, column);
+          return {
+            row,
+            column,
+          };
+        })();
+
+        if (typeof row !== "number" || typeof column !== "number") {
+          return {
+            display: "none",
+            top: "0",
+            left: "0",
+            pointerEvents: "none",
+          };
+        }
+
+        return {
+          top: `${isSelected ? mousePosition.x : (column / 8) * 100}%`,
+          left: `${isSelected ? mousePosition.y : (row / 8) * 100}%`,
+        };
+      })();
+
+      return {
+        piece,
+        positionStyle,
+      };
+    });
+  }, [mousePosition.x, mousePosition.y, pieceRows, selectedPiece]);
   const boardElement = useRef<HTMLDivElement>(null);
 
   useMousePositionListener(boardElement, setMousePosition);
 
+  const handleMouseDown = useCallback(
+    (
+      piece: {
+        square: ChessJs.Square;
+        type: ChessJs.PieceSymbol;
+        color: ChessJs.Color;
+      },
+      e: MouseEvent
+    ) => {
+      console.log("Mousedown (Piece):", piece, e);
+      // setIsSelected(true);
+      setSelectedPiece(piece);
+      // onMouseDown(piece, square, e);
+    },
+    []
+  );
 
+  const handleMouseUp = useCallback(
+    (
+      piece: {
+        square: ChessJs.Square;
+        type: ChessJs.PieceSymbol;
+        color: ChessJs.Color;
+      },
+      e: MouseEvent
+    ) => {
+      console.log("Mouseup (Piece)", piece, e);
+      // setIsSelected(false);
+    },
+    []
+  );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <div style={{ display: "flex", flexDirection: "column" }}>
       <div
-        className='chess-board'
+        className="chess-board"
         ref={boardElement}
+        style={{ pointerEvents: "none" }}
       >
-        {pieceRows
-          .flatMap((row) => row)
-          .map((piece, i) => {
-            const square = getSquareForIndex(i);
-
-            return (
-              <>
-                {piece && (
-                  <Piece
-                    piece={piece}
-                    square={square}
-                  />
-                )}
-              </>
-            );
-          })}
+        {pieces.map((piece) => {
+          return (
+            <>
+              {piece && (
+                <Piece
+                  piece={piece.piece}
+                  style={piece.positionStyle}
+                  onMouseDown={handleMouseDown}
+                  onMouseUp={handleMouseUp}
+                />
+              )}
+            </>
+          );
+        })}
         {squares.map((square) => {
-          return (<Square square={square} />);
+          return <Square square={square} />;
         })}
       </div>
       <div>
-        <div>Turn: {turn === 'b' ? 'Black' : turn === 'w' ? 'White' : ''}</div>
+        <div>Turn: {turn === "b" ? "Black" : turn === "w" ? "White" : ""}</div>
         <div>FenString: {fen}</div>
         <div>
           Mouse position: {mousePosition.x} {mousePosition.y}
