@@ -1,15 +1,5 @@
-import {
-  useCallback,
-  MouseEvent,
-  useMemo,
-  useState,
-  useEffect,
-  MouseEventHandler,
-  CSSProperties,
-} from "react";
-import * as Chess from "../lib/chess-types";
+import { useCallback, MouseEvent, useMemo, CSSProperties } from "react";
 import * as ChessJs from "chess.js";
-import { useBoardStore } from "../hooks/useBoardStore";
 
 export interface PieceProps {
   piece: {

@@ -1,5 +1,4 @@
-import { useState, useMemo, useReducer, useEffect } from "react";
-import * as ChessTypes from "../lib/chess-types";
+import { useMemo } from "react";
 import { Chess } from "chess.js";
 
 declare global {
@@ -10,7 +9,7 @@ declare global {
 
 window.chess = Chess;
 
-export function useChessState(fenString: string | null) {
+export function useChessState(fenString = "") {
   const chess = useMemo(() => new Chess(fenString || undefined), [fenString]);
 
   return {

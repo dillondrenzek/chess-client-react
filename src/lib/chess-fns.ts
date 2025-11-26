@@ -1,5 +1,4 @@
 import * as Chess from "./chess-types";
-import * as ChessJs from "chess.js";
 
 /**
  * Given an index, return the zero-indexed column number
@@ -46,7 +45,7 @@ export function getRowForRank(rank: string): number | null {
  * @param index On a Chess board
  * @returns
  */
-export function getSquareForIndex(index: number): Chess.Square {
+export function getSquareForIndex(index: number): Chess.SquareWithRowColumn {
   const row = getRowForIndex(index);
   const column = getColumnForIndex(index);
 

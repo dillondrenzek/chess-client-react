@@ -7,19 +7,12 @@ import {
   useMemo,
   CSSProperties,
 } from "react";
-import { Piece, PieceProps } from "../app/Piece";
-import { Square, SquareProps, SquareState } from "../app/Square";
-import * as Chess from "../lib/chess-types";
+import { Piece } from "../app/Piece";
+import { Square } from "../app/Square";
 import * as ChessJs from "chess.js";
 import { useChessState } from "../hooks/use-chess-state";
-import {
-  getColumnForFile,
-  getRowForRank,
-  getSquareForIndex,
-} from "../lib/chess-fns";
-import { toReadableString } from "../lib/logging";
+import { getColumnForFile, getRowForRank } from "../lib/chess-fns";
 import { useBoardStore } from "../hooks/useBoardStore";
-import { render } from "@testing-library/react";
 
 function useMousePositionListener(
   boardElement: React.RefObject<HTMLDivElement>,
@@ -66,7 +59,12 @@ interface BoardProps {
 
 export function Board(props: BoardProps) {
   const { fenString } = props;
-  const { fen, pieces: pieceRows, turn, client } = useChessState(fenString);
+  const {
+    fen,
+    pieces: pieceRows,
+    turn,
+    client,
+  } = useChessState(fenString ?? undefined);
   const { mousePosition, setMousePosition, squares } = useBoardStore();
 
   // Log the board in ascii

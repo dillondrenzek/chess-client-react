@@ -1,5 +1,4 @@
-import { Square, SquareColor } from "./types/board";
-import { BoardFile, BoardRank } from "./types/board";
+import { Square, SquareColor, BoardFile, BoardRank } from "../chess-types";
 
 const BoardFiles: BoardFile[] = ["A", "B", "C", "D", "E", "F", "G", "H"];
 const BoardRanks: BoardRank[] = [1, 2, 3, 4, 5, 6, 7, 8];

@@ -1,6 +1,5 @@
 import { buildBoard } from "./board-fns";
-import { Square } from "./types/board";
-import { Piece, PieceColor, PieceType } from "./types/piece";
+import { Square, Piece, PieceColor, PieceType } from "../chess-types";
 
 export function createGame() {
   const board = buildBoard();

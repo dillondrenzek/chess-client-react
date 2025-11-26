@@ -1,5 +1,5 @@
-import { useCallback, MouseEvent, CSSProperties, useMemo } from 'react';
-import * as Chess from '../lib/chess-types';
+import { useCallback, MouseEvent, useMemo } from "react";
+import * as Chess from "../lib/chess-types";
 
 export enum SquareState {
   None = 0,
@@ -7,17 +7,19 @@ export enum SquareState {
 }
 
 export interface SquareProps {
-  square: Chess.Square;
+  square: Chess.SquareWithRowColumn;
 }
 
 export function Square(props: SquareProps) {
   const { square } = props;
 
-  const handleMouseDownOnSquare: React.MouseEventHandler<HTMLDivElement> = useCallback((
-    ev
-  ) => {
-    console.log('Mousedown (Square):', square, ev);
-  }, [square]);
+  const handleMouseDownOnSquare: React.MouseEventHandler<HTMLDivElement> =
+    useCallback(
+      (ev) => {
+        console.log("Mousedown (Square):", square, ev);
+      },
+      [square]
+    );
 
   const handleMouseUp = useCallback(
     (e: MouseEvent) => {
@@ -28,8 +30,8 @@ export function Square(props: SquareProps) {
 
   const squareStyle = useMemo<React.CSSProperties>(() => {
     const { row, column } = square;
-    const transformX = `${column / 8 * 100}%`;
-    const transformY = `${row / 8 * 100}%`;
+    const transformX = `${(column / 8) * 100}%`;
+    const transformY = `${(row / 8) * 100}%`;
     return {
       top: transformY,
       left: transformX,
@@ -38,7 +40,7 @@ export function Square(props: SquareProps) {
 
   return (
     <div
-      className={`square ${square.color === 'dark' ? 'dark' : 'light'}`}
+      className={`square ${square.color === "dark" ? "dark" : "light"}`}
       style={squareStyle}
       data-index={square.index}
       data-rank={square.rank}
@@ -46,7 +48,7 @@ export function Square(props: SquareProps) {
       onMouseDown={handleMouseDownOnSquare}
       onMouseUp={handleMouseUp}
     >
-      <div className='label'>
+      <div className="label">
         {square.file}
         {square.rank}
       </div>
