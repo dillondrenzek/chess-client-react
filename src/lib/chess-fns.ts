@@ -20,13 +20,9 @@ export function getRowForIndex(index: number): number {
  * @returns Zero-indexed value for the column
  */
 export function getColumnForFile(file: string): number | null {
-  const value = parseInt(file);
-  console.log("rank", value);
-  if (value >= 1 && value <= 8) {
-    return value - 1;
-  }
+  const index = "ABCDEFGH".indexOf(file.toUpperCase());
 
-  return null;
+  return index >= 0 ? index : null;
 }
 
 /**
@@ -34,10 +30,19 @@ export function getColumnForFile(file: string): number | null {
  * @param rank
  */
 export function getRowForRank(rank: string): number | null {
-  const index = "ABCDEFGH".indexOf(rank.toUpperCase());
+  const value = parseInt(rank);
+  if (value >= 1 && value <= 8) {
+    return 8 - value;
+  }
 
-  console.log("column", index);
-  return index >= 0 ? index : null;
+  return null;
+}
+
+export function getColorForPosition(
+  row: number,
+  column: number
+): Chess.SquareColor {
+  return column % 2 === (row % 2 === 0 ? 1 : 0) ? "dark" : "light";
 }
 
 /**
