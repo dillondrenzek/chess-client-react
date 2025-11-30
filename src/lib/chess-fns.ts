@@ -25,6 +25,14 @@ export function getColumnForFile(file: string): number | null {
   return index >= 0 ? index : null;
 }
 
+export function getFileForColumn(column: number): Chess.BoardFile {
+  return "ABCDEFGH".charAt(column) as Chess.BoardFile;
+}
+
+export function getRankForRow(row: number): Chess.BoardRank {
+  return (8 - row) as Chess.BoardRank;
+}
+
 /**
  * Returns a zero-indexed value for the row given a string rank like "1" or "8"
  * @param rank
