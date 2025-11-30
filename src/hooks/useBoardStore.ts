@@ -12,6 +12,7 @@ export const useBoardStore = create(
         x: 0,
         y: 0
       },
+      pieces: [],
       squares: new Array(64).fill(null).map((_, index) => {
         return getSquareForIndex(index);
       })
