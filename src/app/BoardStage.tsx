@@ -92,7 +92,6 @@ export function BoardStage() {
                 preventDefault
                 fill={fill}
                 onClick={handleClick}
-                onDragStart={handleDragStart}
               />
             </>
           );
@@ -152,48 +151,6 @@ type SquareProps = {
   rank: SquareWithRowColumn["rank"];
 };
 
-function Square(props: SquareProps) {
-  const { column, row, file, rank } = props;
-  const x = (BOARD_WIDTH / 8) * column;
-  const y = (BOARD_HEIGHT / 8) * row;
-  const fill =
-    getColorForPosition(row, column) === "dark"
-      ? "rgba(0,0,0,0.2)"
-      : "rgba(0,0,0,0.1)";
-  return (
-    <>
-      {/* <Text
-        text={`${file}${rank}`}
-        x={x + 5}
-        y={y + 5}
-        preventDefault
-        fill={"rgba(0,0,0,0.4)"}
-      />
-      <Text
-        text={`(${row},${column})`}
-        x={x + 5}
-        y={y + 15}
-        preventDefault
-        fill={"rgba(0,0,0,0.4)"}
-      />
-      <Text
-        text={`(${x},${y})`}
-        x={x + 5}
-        y={y + 25}
-        preventDefault
-        fill={"rgba(0,0,0,0.4)"}
-      /> */}
-      <Rect
-        height={BOARD_HEIGHT / 8}
-        width={BOARD_WIDTH / 8}
-        x={x}
-        y={y}
-        preventDefault
-        fill={fill}
-      />
-    </>
-  );
-}
 
 type PieceProps = {
   piece: {
@@ -209,44 +166,3 @@ type PieceProps = {
   onClick: NonNullable<KonvaNodeEvents['onClick']>;
 };
 
-function Piece(props: PieceProps) {
-  const { piece, ...rest } = props;
-  const pieceCode = `${piece.color}${piece.type}`;
-  const imageUrl = `https://images.chesscomfiles.com/chess-themes/pieces/neo_wood/150/${pieceCode}.png`;
-  const [image] = useImage(imageUrl, 'anonymous');
-
-  const height = BOARD_HEIGHT / 8;
-  const width = BOARD_WIDTH / 8;
-
-  const handleDragStart = useCallback<NonNullable<PieceProps['onDragStart']>>((e) => { console.log('onDragStart', e) }, []);
-  const handleDragMove = useCallback<NonNullable<PieceProps['onDragMove']>>((e) => { console.log('onDrageMove', e) }, []);
-  const handleDragEnd = useCallback<NonNullable<PieceProps['onDragEnd']>>((e) => { console.log('onDragEnd', e); }, []);
-  const handleClick = useCallback<NonNullable<PieceProps['onClick']>>((e) => { console.log('onClick', e) }, []);
-
-  return <Rect
-    height={height}
-    width={width}
-    fill="red"
-    onClick={() => { console.log('click piece') }}
-    onDragStart={(e) => { console.log('onDragStart', e) }}
-    onDragMove={handleDragMove}
-    onDragEnd={handleDragEnd}
-  // {...rest}
-  />;
-
-  // return (image ? (
-  //   <Image
-  //     image={image}
-  //     height={height}
-  //     width={width}
-  //     draggable
-  //     {...rest}
-  //   />
-  // ) : <Rect
-  //   {...rest}
-  //   height={height}
-  //   width={width}
-  //   draggable
-  //   fill="red"
-  // />);
-}
