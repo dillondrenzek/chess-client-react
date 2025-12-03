@@ -1,17 +1,13 @@
-import { Layer, Rect, Text, Stage, Image, KonvaNodeEvents } from "react-konva";
+import { Layer, Rect, Text, Stage, KonvaNodeEvents } from "react-konva";
 import { useBoardStore } from "../hooks/useBoardStore";
-import { SquareColor, SquareWithRowColumn } from "../lib/chess-types";
 import {
   getColorForPosition,
   getFileForColumn,
   getPositionForSquare,
   getRankForRow,
-  getRowForRank,
 } from "../lib/chess-fns";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import * as ChessJs from "chess.js";
-import Konva from "konva";
-import useImage from "use-image";
 import { useChessState } from "../hooks/use-chess-state";
 
 function getSquareForLayerCoordinates(
@@ -33,7 +29,7 @@ export type BoardStageProps = {
 export function BoardStage(props: BoardStageProps) {
   const { height: boardHeight, width: boardWidth } = props;
   const { squares } = useBoardStore();
-  const { pieces: pieceRows, movePieceToSquare, ascii } = useChessState();
+  const { pieces, movePieceToSquare, ascii } = useChessState();
 
   useEffect(() => {
     console.log(ascii);
@@ -83,26 +79,18 @@ export function BoardStage(props: BoardStageProps) {
   const positionedPieces = useMemo(() => {
     const height = boardHeight / 8;
     const width = boardWidth / 8;
-    return pieceRows
-      .flatMap((piece) => {
+    return pieces
+      .map((piece) => {
         return piece
-          .map((piece) => {
-            return piece
-              ? {
-                  ...getPositionForSquare(
-                    piece.square,
-                    boardWidth,
-                    boardHeight
-                  ),
-                  pieceHeight: height,
-                  pieceWidth: width,
-                  piece,
-                }
-              : null;
-          })
-          .filter((p) => !!p);
+          ? {
+              ...getPositionForSquare(piece.square, boardWidth, boardHeight),
+              pieceHeight: height,
+              pieceWidth: width,
+              piece,
+            }
+          : null;
       })
-      .filter((piece) => !!piece) as {
+      .filter((p) => !!p) as {
       x: number;
       y: number;
       pieceHeight: number;
@@ -113,7 +101,7 @@ export function BoardStage(props: BoardStageProps) {
         color: ChessJs.Color;
       };
     }[];
-  }, [pieceRows, boardHeight, boardWidth]);
+  }, [pieces, boardHeight, boardWidth]);
 
   const positionedSquares = useMemo(() => {
     return squares.map((square) => {
@@ -221,13 +209,6 @@ export function BoardStage(props: BoardStageProps) {
     </Stage>
   );
 }
-
-type SquareProps = {
-  column: number;
-  row: number;
-  file: SquareWithRowColumn["file"];
-  rank: SquareWithRowColumn["rank"];
-};
 
 type PieceProps = {
   piece: {

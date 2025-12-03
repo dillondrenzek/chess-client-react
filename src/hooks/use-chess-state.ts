@@ -28,15 +28,41 @@ export function useChessState(inputString = DEFAULT_FEN_STRING) {
       piece: { type: ChessJs.PieceSymbol; color: ChessJs.Color },
       toSquare: ChessJs.Square
     ) => {
-      client.remove(fromSquare);
-      client.put(piece, toSquare);
-      setFenString(client.fen());
+      try {
+        const move: ChessJs.Move = client.move({
+          from: fromSquare,
+          to: toSquare,
+        });
+        setFenString(move.after);
+      } catch (e) {
+        console.error(e);
+      }
+
+      // client.remove(fromSquare);
+      // client.put(piece, toSquare);
+      // setFenString(client.fen());
     },
     [client]
   );
 
-  const pieces = useMemo(() => {
-    return client.board();
+  const pieces = useMemo<
+    {
+      square: ChessJs.Square;
+      type: ChessJs.PieceSymbol;
+      color: ChessJs.Color;
+    }[]
+  >(() => {
+    return client.board().flatMap((piece) => {
+      return piece
+        .map((piece) => {
+          return piece;
+        })
+        .filter((p) => !!p);
+    }) as {
+      square: ChessJs.Square;
+      type: ChessJs.PieceSymbol;
+      color: ChessJs.Color;
+    }[];
   }, [client]);
 
   const ascii = useMemo(() => {
@@ -45,6 +71,10 @@ export function useChessState(inputString = DEFAULT_FEN_STRING) {
 
   const turn = useMemo(() => {
     return client.turn();
+  }, [client]);
+
+  useEffect(() => {
+    console.log("State update:", client.moves(), client.fen());
   }, [client]);
 
   return {
