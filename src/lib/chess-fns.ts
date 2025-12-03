@@ -1,4 +1,5 @@
 import * as Chess from "./chess-types";
+import * as ChessJs from "chess.js";
 
 /**
  * Given an index, return the zero-indexed column number
@@ -44,6 +45,25 @@ export function getRowForRank(rank: string): number | null {
   }
 
   return null;
+}
+
+export function getPositionForSquare(
+  square: ChessJs.Square,
+  boardWidth: number,
+  boardHeight: number
+): {
+  x: number;
+  y: number;
+  square: ChessJs.Square;
+} {
+  const file = square.charAt(0);
+  const rank = square.charAt(1);
+
+  return {
+    x: ((getColumnForFile(file) ?? 0) * boardWidth) / 8,
+    y: ((getRowForRank(rank) ?? 0) * boardHeight) / 8,
+    square,
+  };
 }
 
 export function getColorForPosition(

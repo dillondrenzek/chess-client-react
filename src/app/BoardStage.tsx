@@ -1,145 +1,223 @@
 import { Layer, Rect, Text, Stage, Image, KonvaNodeEvents } from "react-konva";
 import { useBoardStore } from "../hooks/useBoardStore";
 import { SquareColor, SquareWithRowColumn } from "../lib/chess-types";
-import { getColorForPosition, getFileForColumn, getRankForRow, getRowForRank } from "../lib/chess-fns";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  getColorForPosition,
+  getFileForColumn,
+  getPositionForSquare,
+  getRankForRow,
+  getRowForRank,
+} from "../lib/chess-fns";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as ChessJs from "chess.js";
 import Konva from "konva";
 import useImage from "use-image";
 import { useChessState } from "../hooks/use-chess-state";
 
-const BOARD_HEIGHT = 500;
-const BOARD_WIDTH = 500;
-
-function getSquareForLayerCoordinates(layerX: number, layerY: number) {
-  const column = Math.floor(layerX / BOARD_WIDTH * 8);
-  const row = Math.floor(layerY / BOARD_HEIGHT * 8);
+function getSquareForLayerCoordinates(
+  layerX: number,
+  layerY: number,
+  boardWidth: number,
+  boardHeight: number
+) {
+  const column = Math.floor((layerX / boardWidth) * 8);
+  const row = Math.floor((layerY / boardHeight) * 8);
   return `${getFileForColumn(column)}${getRankForRow(row)}`;
 }
 
-export function BoardStage() {
-  const { squares } = useBoardStore();
-  const {
-    fen,
-    pieces: pieceRows,
-    turn,
-    client,
-  } = useChessState();
+export type BoardStageProps = {
+  height: number;
+  width: number;
+};
 
-  const pieces = useMemo(() => {
-    return pieceRows.flatMap((piece) => {
-      return piece.map((piece) => {
-        return piece ? {
-          x: 50,
-          y: 50,
-          piece,
-        } : null;
-      }).filter((p) => !!p)
-    }).filter((piece) => !!piece) as {
-      x: number; y: number; piece: {
+export function BoardStage(props: BoardStageProps) {
+  const { height: boardHeight, width: boardWidth } = props;
+  const { squares } = useBoardStore();
+  const { pieces: pieceRows, movePieceToSquare, ascii } = useChessState();
+
+  useEffect(() => {
+    console.log(ascii);
+  }, [ascii]);
+
+  const handleDragStart = useCallback<NonNullable<PieceProps["onDragStart"]>>(
+    (e, kEvt) => {
+      console.log("onDragStart", e, kEvt);
+    },
+    []
+  );
+  const handleDragMove = useCallback<NonNullable<PieceProps["onDragMove"]>>(
+    (e, kEvt) => {
+      const { layerX, layerY } = kEvt.evt as any;
+      console.log("onDragMove", e, layerX, layerY);
+    },
+    []
+  );
+  const handleDragEnd = useCallback<NonNullable<PieceProps["onDragEnd"]>>(
+    (e, kEvt) => {
+      if (kEvt.type === "dragend") {
+        const { layerX, layerY } = kEvt.evt as any;
+        const newSquare = getSquareForLayerCoordinates(
+          layerX,
+          layerY,
+          boardWidth,
+          boardHeight
+        );
+
+        // client.remove()
+
+        movePieceToSquare(
+          e.square,
+          { type: e.type, color: e.color },
+          newSquare.toLowerCase() as ChessJs.Square
+        );
+
+        console.log("onDragEnd", e, layerX, layerY, newSquare);
+      }
+    },
+    [boardHeight, boardWidth, movePieceToSquare]
+  );
+  const handleClick = useCallback<NonNullable<PieceProps["onClick"]>>((e) => {
+    console.log("onClick", e);
+  }, []);
+
+  const positionedPieces = useMemo(() => {
+    const height = boardHeight / 8;
+    const width = boardWidth / 8;
+    return pieceRows
+      .flatMap((piece) => {
+        return piece
+          .map((piece) => {
+            return piece
+              ? {
+                  ...getPositionForSquare(
+                    piece.square,
+                    boardWidth,
+                    boardHeight
+                  ),
+                  pieceHeight: height,
+                  pieceWidth: width,
+                  piece,
+                }
+              : null;
+          })
+          .filter((p) => !!p);
+      })
+      .filter((piece) => !!piece) as {
+      x: number;
+      y: number;
+      pieceHeight: number;
+      pieceWidth: number;
+      piece: {
         square: ChessJs.Square;
         type: ChessJs.PieceSymbol;
         color: ChessJs.Color;
       };
     }[];
-  }, [pieceRows]);
+  }, [pieceRows, boardHeight, boardWidth]);
 
-  const handleDragStart = useCallback<NonNullable<PieceProps['onDragStart']>>((e) => { console.log('onDragStart', e) }, []);
-  const handleDragMove = useCallback<NonNullable<PieceProps['onDragMove']>>((e) => { console.log('onDragMove', e) }, []);
-  const handleDragEnd = useCallback<NonNullable<PieceProps['onDragEnd']>>((e) => { if (e.type === 'dragend') { const { layerX, layerY } = (e.evt as any); console.log('onDragEnd', getSquareForLayerCoordinates(layerX, layerY)); } }, []);
-  const handleClick = useCallback<NonNullable<PieceProps['onClick']>>((e) => { console.log('onClick', e) }, []);
+  const positionedSquares = useMemo(() => {
+    return squares.map((square) => {
+      const { column, row } = square;
+      const boardFactorX = boardWidth / 8;
+      const boardFactorY = boardHeight / 8;
+      return {
+        ...square,
+        squareWidth: boardWidth / 8,
+        squareHeight: boardHeight / 8,
+        x: boardFactorX * column,
+        y: boardFactorY * row,
+      };
+    });
+  }, [squares, boardHeight, boardWidth]);
 
   return (
-    <Stage height={BOARD_HEIGHT} width={BOARD_WIDTH}>
+    <Stage height={boardHeight} width={boardWidth}>
       <Layer>
-        {squares.map((square) => {
-
-          const { column, row, file, rank } = square;
-          const x = (BOARD_WIDTH / 8) * column;
-          const y = (BOARD_HEIGHT / 8) * row;
-          const fill =
-            getColorForPosition(row, column) === "dark"
-              ? "rgba(0,0,0,0.2)"
-              : "rgba(0,0,0,0.1)";
+        {positionedSquares.map(
+          ({ column, file, rank, row, x, y, squareHeight, squareWidth }) => {
+            const fill =
+              getColorForPosition(row, column) === "dark"
+                ? "rgba(0,0,0,0.2)"
+                : "rgba(0,0,0,0.1)";
+            return (
+              <>
+                <Text
+                  text={`${file}${rank}`}
+                  x={x + 5}
+                  y={y + 5}
+                  preventDefault
+                  fill={"rgba(0,0,0,0.4)"}
+                />
+                {/* <Text
+                  text={`(${row},${column})`}
+                  x={x + 5}
+                  y={y + 15}
+                  preventDefault
+                  fill={"rgba(0,0,0,0.4)"}
+                />
+                <Text
+                  text={`(${x},${y})`}
+                  x={x + 5}
+                  y={y + 25}
+                  preventDefault
+                  fill={"rgba(0,0,0,0.4)"}
+                /> */}
+                <Rect
+                  height={squareHeight}
+                  width={squareWidth}
+                  x={x}
+                  y={y}
+                  preventDefault
+                  fill={fill}
+                  onClick={handleClick}
+                />
+              </>
+            );
+          }
+        )}
+      </Layer>
+      <Layer>
+        {positionedPieces.map(({ piece, x, y, pieceHeight, pieceWidth }) => {
           return (
-            <>
+            <React.Fragment key={piece.color + piece.square + piece.type}>
+              <Rect
+                height={pieceHeight}
+                width={pieceWidth}
+                x={x}
+                y={y}
+                fill="rgba(200,50,50, 1)"
+                draggable
+                onClick={handleClick}
+                onDragStart={(e) => handleDragStart(piece, e)}
+                onDragMove={(e) => handleDragMove(piece, e)}
+                onDragEnd={(e) => handleDragEnd(piece, e)}
+              />
               <Text
-                text={`${file}${rank}`}
+                text={`${piece.square.toUpperCase()}`}
                 x={x + 5}
                 y={y + 5}
                 preventDefault
-                fill={"rgba(0,0,0,0.4)"}
+                fill={"black"}
               />
               <Text
-                text={`(${row},${column})`}
+                text={`${piece.color}${piece.type}`}
                 x={x + 5}
                 y={y + 15}
                 preventDefault
-                fill={"rgba(0,0,0,0.4)"}
+                fill={"black"}
               />
+              {/* 
               <Text
-                text={`(${x},${y})`}
+                text={`${x},${y}`}
                 x={x + 5}
                 y={y + 25}
                 preventDefault
-                fill={"rgba(0,0,0,0.4)"}
-              />
-              <Rect
-                height={BOARD_HEIGHT / 8}
-                width={BOARD_WIDTH / 8}
-                x={x}
-                y={y}
-                preventDefault
-                fill={fill}
-                onClick={handleClick}
-              />
-            </>
+                fill={"black"}
+              /> */}
+            </React.Fragment>
           );
-
-          // return (
-          //   <Square
-          //     row={square.row}
-          //     column={square.column}
-          //     file={square.file}
-          //     rank={square.rank}
-          //     onClick={() => { console.log('click') }}
-          //     onDragStart={(e) => { console.log('onDragStart', e) }}
-          //     onDragMove={handleDragMove}
-          //     onDragEnd={handleDragEnd}
-          //   />
-          // )
         })}
       </Layer>
-      <Layer>
-        {pieces.map(({ piece, x, y }) => {
-          const height = BOARD_HEIGHT / 8;
-          const width = BOARD_WIDTH / 8;
-          // <Piece
-          //   piece={piece}
-          //   x={x}
-          //   y={y}
-          //   onClick={handleClick}
-          //   onDragStart={handleDragStart}
-          //   onDragMove={handleDragMove}
-          //   onDragEnd={handleDragEnd}
-          // />
-          return <Rect
-            height={height}
-            width={width}
-            fill="red"
-            draggable
-            onClick={handleClick}
-            onDragStart={handleDragStart}
-            onDragMove={handleDragMove}
-            onDragEnd={handleDragEnd}
-          // {...rest}
-          />;
-        }
-        )}
-
-      </Layer>
-
-
     </Stage>
   );
 }
@@ -151,18 +229,37 @@ type SquareProps = {
   rank: SquareWithRowColumn["rank"];
 };
 
-
 type PieceProps = {
   piece: {
     square: ChessJs.Square;
     type: ChessJs.PieceSymbol;
     color: ChessJs.Color;
-  },
-  x: number,
-  y: number,
-  onDragStart: NonNullable<KonvaNodeEvents['onDragStart']>;
-  onDragMove: NonNullable<KonvaNodeEvents['onDragMove']>;
-  onDragEnd: NonNullable<KonvaNodeEvents['onDragEnd']>;
-  onClick: NonNullable<KonvaNodeEvents['onClick']>;
+  };
+  x: number;
+  y: number;
+  onDragStart: (
+    piece: {
+      square: ChessJs.Square;
+      type: ChessJs.PieceSymbol;
+      color: ChessJs.Color;
+    },
+    konvaEvt: Parameters<NonNullable<KonvaNodeEvents["onDragStart"]>>[0]
+  ) => void;
+  onDragMove: (
+    piece: {
+      square: ChessJs.Square;
+      type: ChessJs.PieceSymbol;
+      color: ChessJs.Color;
+    },
+    konvaEvt: Parameters<NonNullable<KonvaNodeEvents["onDragMove"]>>[0]
+  ) => void;
+  onDragEnd: (
+    piece: {
+      square: ChessJs.Square;
+      type: ChessJs.PieceSymbol;
+      color: ChessJs.Color;
+    },
+    konvaEvt: Parameters<NonNullable<KonvaNodeEvents["onDragEnd"]>>[0]
+  ) => void;
+  onClick: NonNullable<KonvaNodeEvents["onClick"]>;
 };
-
