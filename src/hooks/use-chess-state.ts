@@ -13,7 +13,10 @@ const DEFAULT_FEN_STRING =
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export function useChessState(inputString = DEFAULT_FEN_STRING) {
+  /** Source of truth state is the FEN string */
   const [fenString, setFenString] = useState<string>(inputString);
+
+  /** Chess.js client - designed to update with the source of truth */
   const client = useMemo(
     () => new ChessJs.Chess(fenString || undefined),
     [fenString]

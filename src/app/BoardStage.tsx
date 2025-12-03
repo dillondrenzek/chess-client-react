@@ -41,14 +41,14 @@ export function BoardStage(props: BoardStageProps) {
 
   const handleDragStart = useCallback<NonNullable<PieceProps["onDragStart"]>>(
     (e, kEvt) => {
-      console.log("onDragStart", e, kEvt);
+      // console.log("onDragStart", e, kEvt);
     },
     []
   );
   const handleDragMove = useCallback<NonNullable<PieceProps["onDragMove"]>>(
     (e, kEvt) => {
-      const { layerX, layerY } = kEvt.evt as any;
-      console.log("onDragMove", e, layerX, layerY);
+      // const { layerX, layerY } = kEvt.evt as any;
+      // console.log("onDragMove", e, layerX, layerY);
     },
     []
   );
@@ -71,7 +71,7 @@ export function BoardStage(props: BoardStageProps) {
           newSquare.toLowerCase() as ChessJs.Square
         );
 
-        console.log("onDragEnd", e, layerX, layerY, newSquare);
+        // console.log("onDragEnd", e, layerX, layerY, newSquare);
       }
     },
     [boardHeight, boardWidth, movePieceToSquare]
