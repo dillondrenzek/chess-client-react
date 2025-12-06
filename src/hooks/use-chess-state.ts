@@ -71,6 +71,22 @@ export function useChessState(inputString = DEFAULT_FEN_STRING) {
     return client.turn();
   }, [client]);
 
+  const isCheck = useMemo(() => {
+    return client.isCheck();
+  }, [client]);
+
+  const isCheckmate = useMemo(() => {
+    return client.isCheckmate();
+  }, [client]);
+
+  const isGameOver = useMemo(() => {
+    return client.isGameOver();
+  }, [client]);
+
+  const reset = useCallback(() => {
+    setFenString(DEFAULT_FEN_STRING);
+  }, []);
+
   useEffect(() => {
     console.log("State update:", client.moves(), client.fen());
   }, [client]);
@@ -81,6 +97,10 @@ export function useChessState(inputString = DEFAULT_FEN_STRING) {
     turn,
     ascii,
     client,
+    isCheck,
+    isCheckmate,
+    isGameOver,
     movePieceToSquare,
+    reset,
   };
 }

@@ -7,7 +7,17 @@ const BOARD_WIDTH = 500;
 
 function App() {
   // const fenString = new URL(window.location.href).searchParams.get("fen");
-  const { pieces, movePieceToSquare, ascii, turn, fen } = useChessState();
+  const {
+    pieces,
+    movePieceToSquare,
+    ascii,
+    turn,
+    fen,
+    isCheck,
+    isCheckmate,
+    isGameOver,
+    reset,
+  } = useChessState();
 
   return (
     <div
@@ -25,12 +35,16 @@ function App() {
       />
       <div>Turn: {turn}</div>
       <div>Fen: {fen}</div>
+      <div>Is check: {isCheck ? "true" : "false"}</div>
+      <div>Is checkmate: {isCheckmate ? "true" : "false"}</div>
+      <div>Is game over: {isGameOver ? "true" : "false"}</div>
       <div>
         ASCII:
         <code>
           <pre>{ascii}</pre>
         </code>
       </div>
+      <button onClick={reset}>Reset</button>
     </div>
   );
 }
