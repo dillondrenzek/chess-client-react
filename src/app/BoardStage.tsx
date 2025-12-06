@@ -7,35 +7,28 @@ import {
   getRankForRow,
 } from "../lib/chess-fns";
 import React, { useCallback, useMemo } from "react";
-import * as ChessJs from "chess.js";
 import { Piece } from "./Piece";
+import * as Chess from "../lib/chess-types";
 
 function getSquareForLayerCoordinates(
   layerX: number,
   layerY: number,
   boardWidth: number,
   boardHeight: number
-): ChessJs.Square {
+): Chess.Square {
   const column = Math.floor((layerX / boardWidth) * 8);
   const row = Math.floor((layerY / boardHeight) * 8);
-  return `${getFileForColumn(column)}${getRankForRow(row)}` as ChessJs.Square;
+  return `${getFileForColumn(column)}${getRankForRow(row)}` as Chess.Square;
 }
 
 export type BoardStageProps = {
   height: number;
   width: number;
-  pieces: {
-    square: ChessJs.Square;
-    type: ChessJs.PieceSymbol;
-    color: ChessJs.Color;
-  }[];
+  pieces: Chess.PieceWithSquare[];
   movePieceToSquare: (
-    fromSquare: ChessJs.Square,
-    piece: {
-      type: ChessJs.PieceSymbol;
-      color: ChessJs.Color;
-    },
-    toSquare: ChessJs.Square
+    fromSquare: Chess.Square,
+    piece: Chess.Piece,
+    toSquare: Chess.Square
   ) => void;
 };
 
@@ -75,7 +68,7 @@ export function BoardStage(props: BoardStageProps) {
         movePieceToSquare(
           e.square,
           { type: e.type, color: e.color },
-          newSquare.toLowerCase() as ChessJs.Square
+          newSquare.toLowerCase() as Chess.Square
         );
       }
     },
@@ -104,11 +97,7 @@ export function BoardStage(props: BoardStageProps) {
       y: number;
       pieceHeight: number;
       pieceWidth: number;
-      piece: {
-        square: ChessJs.Square;
-        type: ChessJs.PieceSymbol;
-        color: ChessJs.Color;
-      };
+      piece: Chess.PieceWithSquare;
     }[];
   }, [pieces, boardHeight, boardWidth]);
 
@@ -219,35 +208,19 @@ export function BoardStage(props: BoardStageProps) {
 }
 
 type PieceProps = {
-  piece: {
-    square: ChessJs.Square;
-    type: ChessJs.PieceSymbol;
-    color: ChessJs.Color;
-  };
+  piece: Chess.PieceWithSquare;
   x: number;
   y: number;
   onDragStart: (
-    piece: {
-      square: ChessJs.Square;
-      type: ChessJs.PieceSymbol;
-      color: ChessJs.Color;
-    },
+    piece: Chess.PieceWithSquare,
     konvaEvt: Parameters<NonNullable<KonvaNodeEvents["onDragStart"]>>[0]
   ) => void;
   onDragMove: (
-    piece: {
-      square: ChessJs.Square;
-      type: ChessJs.PieceSymbol;
-      color: ChessJs.Color;
-    },
+    piece: Chess.PieceWithSquare,
     konvaEvt: Parameters<NonNullable<KonvaNodeEvents["onDragMove"]>>[0]
   ) => void;
   onDragEnd: (
-    piece: {
-      square: ChessJs.Square;
-      type: ChessJs.PieceSymbol;
-      color: ChessJs.Color;
-    },
+    piece: Chess.PieceWithSquare,
     konvaEvt: Parameters<NonNullable<KonvaNodeEvents["onDragEnd"]>>[0]
   ) => void;
   onClick: NonNullable<KonvaNodeEvents["onClick"]>;

@@ -1,30 +1,24 @@
-import * as ChessJs from "chess.js";
 import { Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
 import Konva from "konva";
 import { KonvaEventObject } from "../lib/konva-types";
+import { PieceWithSquare } from "../lib/chess-types";
 
 type KonvaImageProps = Konva.ImageConfig;
 
-type PieceModel = {
-  square: ChessJs.Square;
-  type: ChessJs.PieceSymbol;
-  color: ChessJs.Color;
-};
-
 export type PieceProps = {
-  piece: PieceModel;
+  piece: PieceWithSquare;
 } & Omit<KonvaImageProps, "image"> & {
     onDragStart: (
-      piece: PieceModel,
+      piece: PieceWithSquare,
       konvaEvt: KonvaEventObject<"onDragStart">
     ) => void;
     onDragMove: (
-      piece: PieceModel,
+      piece: PieceWithSquare,
       konvaEvt: KonvaEventObject<"onDragMove">
     ) => void;
     onDragEnd: (
-      piece: PieceModel,
+      piece: PieceWithSquare,
       konvaEvt: KonvaEventObject<"onDragEnd">
     ) => void;
   };

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as ChessJs from "chess.js";
 import { parseChessJsError } from "../lib/chess-js-error";
+import { Piece, PieceWithSquare, Square } from "../lib/chess-types";
 
 declare global {
   interface Window {
@@ -24,11 +25,7 @@ export function useChessState(inputString = DEFAULT_FEN_STRING) {
   );
 
   const movePieceToSquare = useCallback(
-    (
-      fromSquare: ChessJs.Square,
-      piece: { type: ChessJs.PieceSymbol; color: ChessJs.Color },
-      toSquare: ChessJs.Square
-    ) => {
+    (fromSquare: Square, piece: Piece, toSquare: Square) => {
       try {
         const move: ChessJs.Move = client.move({
           from: fromSquare,
@@ -43,24 +40,14 @@ export function useChessState(inputString = DEFAULT_FEN_STRING) {
     [client]
   );
 
-  const pieces = useMemo<
-    {
-      square: ChessJs.Square;
-      type: ChessJs.PieceSymbol;
-      color: ChessJs.Color;
-    }[]
-  >(() => {
+  const pieces = useMemo<PieceWithSquare[]>(() => {
     return client.board().flatMap((piece) => {
       return piece
         .map((piece) => {
           return piece;
         })
         .filter((p) => !!p);
-    }) as {
-      square: ChessJs.Square;
-      type: ChessJs.PieceSymbol;
-      color: ChessJs.Color;
-    }[];
+    }) as PieceWithSquare[];
   }, [client]);
 
   const ascii = useMemo(() => {
