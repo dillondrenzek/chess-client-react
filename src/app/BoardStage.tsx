@@ -9,6 +9,7 @@ import {
 import React, { useCallback, useMemo } from "react";
 import { Piece } from "./Piece";
 import * as Chess from "../lib/chess-types";
+import { useAppContext } from "../lib/app-context";
 
 function getSquareForLayerCoordinates(
   layerX: number,
@@ -33,6 +34,7 @@ export type BoardStageProps = {
 };
 
 export function BoardStage(props: BoardStageProps) {
+  const { debugMode } = useAppContext();
   const {
     height: boardHeight,
     width: boardWidth,
@@ -177,28 +179,32 @@ export function BoardStage(props: BoardStageProps) {
                 onDragEnd={handleDragEnd}
               />
               <Rect />
-              <Text
-                text={`${piece.square.toUpperCase()}`}
-                x={x + 5}
-                y={y + 5}
-                preventDefault
-                fill={"black"}
-              />
-              <Text
-                text={`${piece.color}${piece.type}`}
-                x={x + 5}
-                y={y + 15}
-                preventDefault
-                fill={"black"}
-              />
-              {/* 
-              <Text
-                text={`${x},${y}`}
-                x={x + 5}
-                y={y + 25}
-                preventDefault
-                fill={"black"}
-              /> */}
+              {debugMode && (
+                <>
+                  <Text
+                    text={`${piece.square.toUpperCase()}`}
+                    x={x + 5}
+                    y={y + 5}
+                    preventDefault
+                    fill={"black"}
+                  />
+                  <Text
+                    text={`${piece.color}${piece.type}`}
+                    x={x + 5}
+                    y={y + 15}
+                    preventDefault
+                    fill={"black"}
+                  />
+                  {/* 
+                    <Text
+                      text={`${x},${y}`}
+                      x={x + 5}
+                      y={y + 25}
+                      preventDefault
+                      fill={"black"}
+                    /> */}
+                </>
+              )}
             </React.Fragment>
           );
         })}
