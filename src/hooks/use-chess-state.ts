@@ -1,72 +1,93 @@
-import { useState, useMemo, useReducer, useEffect } from "react";
-import { getPiecesFromFEN, DEFAULT_FEN_STRING } from "../lib/parse-fen";
-import * as Chess from "../lib/chess-types";
-import { chessStateToFen } from "../lib/chess-state-to-fen";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import * as ChessJs from "chess.js";
+import { parseChessJsError } from "../lib/chess-js-error";
+import { Piece, PieceWithSquare, Square } from "../lib/chess-types";
 
-type Action<T extends string, U = never> = {
-  type: T;
-  payload: U;
-};
+declare global {
+  interface Window {
+    chess: typeof ChessJs.Chess;
+  }
+}
 
-type ChessStateAction = Action<
-  "MOVE_PIECE",
-  { fromSquare: Chess.Square; toSquare: Chess.Square }
->;
+window.chess = ChessJs.Chess;
 
-type ChessStateReducer = (
-  prevState: Chess.ChessState,
-  action: ChessStateAction
-) => Chess.ChessState;
+const DEFAULT_FEN_STRING =
+  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-export function useChessState(fenString: string) {
-  const { pieces, turn, input, isValid } = useMemo(
-    () => getPiecesFromFEN(fenString),
+export function useChessState(inputString = DEFAULT_FEN_STRING) {
+  /** Source of truth state is the FEN string */
+  const [fenString, setFenString] = useState<string>(inputString);
+
+  /** Chess.js client - designed to update with the source of truth */
+  const client = useMemo(
+    () => new ChessJs.Chess(fenString || undefined),
     [fenString]
   );
 
-  const [fen, setFen] = useState<string>(isValid ? input : DEFAULT_FEN_STRING);
-
-  const [state, dispatch] = useReducer<ChessStateReducer>(
-    (prevState, action) => {
-      const { type, payload } = action;
-      const { pieces } = prevState;
-
-      switch (type) {
-        case "MOVE_PIECE": {
-          const { fromSquare, toSquare } = payload;
-          const { index: fromIndex } = fromSquare;
-          const { index: toIndex } = toSquare;
-
-          const newPieces = [...pieces];
-          newPieces[fromIndex] = null;
-          newPieces[toIndex] = pieces[fromIndex];
-
-          return {
-            ...prevState,
-            pieces: newPieces,
-          };
-        }
+  const movePieceToSquare = useCallback(
+    (fromSquare: Square, piece: Piece, toSquare: Square) => {
+      try {
+        const move: ChessJs.Move = client.move({
+          from: fromSquare,
+          to: toSquare,
+        });
+        setFenString(move.after);
+      } catch (e) {
+        const error = parseChessJsError(e);
+        console.error("Parsed error:", error);
       }
-
-      return prevState;
     },
-    {
-      pieces,
-      turn,
-    }
+    [client]
   );
 
-  // Update FEN string
+  const pieces = useMemo<PieceWithSquare[]>(() => {
+    return client.board().flatMap((piece) => {
+      return piece
+        .map((piece) => {
+          return piece;
+        })
+        .filter((p) => !!p);
+    }) as PieceWithSquare[];
+  }, [client]);
+
+  const ascii = useMemo(() => {
+    return client.ascii();
+  }, [client]);
+
+  const turn = useMemo(() => {
+    return client.turn();
+  }, [client]);
+
+  const isCheck = useMemo(() => {
+    return client.isCheck();
+  }, [client]);
+
+  const isCheckmate = useMemo(() => {
+    return client.isCheckmate();
+  }, [client]);
+
+  const isGameOver = useMemo(() => {
+    return client.isGameOver();
+  }, [client]);
+
+  const reset = useCallback(() => {
+    setFenString(DEFAULT_FEN_STRING);
+  }, []);
+
   useEffect(() => {
-    const newFen = chessStateToFen(state);
-    setFen(newFen);
-  }, [state]);
+    console.log("State update:", client.moves(), client.fen());
+  }, [client]);
 
   return {
-    fen,
-    ...state,
-    dispatch,
-    input,
-    isValid,
+    fen: fenString,
+    pieces,
+    turn,
+    ascii,
+    client,
+    isCheck,
+    isCheckmate,
+    isGameOver,
+    movePieceToSquare,
+    reset,
   };
 }
