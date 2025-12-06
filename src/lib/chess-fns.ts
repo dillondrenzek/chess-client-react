@@ -87,7 +87,7 @@ export function getSquareForIndex(index: number): Chess.SquareWithRowColumn {
     row,
     column,
     color: index % 2 === (row % 2 === 0 ? 0 : 1) ? "dark" : "light",
-    rank: (8 - row) as Chess.BoardRank,
-    file: "ABCDEFGH".charAt(column) as Chess.BoardFile,
+    rank: getRankForRow(row),
+    file: getFileForColumn(column),
   };
 }
