@@ -50,6 +50,41 @@ export function useChessState(inputString = DEFAULT_FEN_STRING) {
     }) as PieceWithSquare[];
   }, [client]);
 
+  const capturedPieces = useMemo<Piece[]>(() => {
+    const getCapturedPieces = function (
+      color: ChessJs.Color,
+      type: ChessJs.PieceSymbol,
+      total: number
+    ) {
+      const uncapturedPieces = pieces.filter(
+        (piece) => piece.color === color && piece.type === type
+      );
+      return new Array(total - uncapturedPieces.length).fill({
+        color,
+        type,
+      });
+    };
+
+    return [
+      ...getCapturedPieces("b", "p", 8),
+      ...getCapturedPieces("b", "k", 1),
+      ...getCapturedPieces("b", "q", 1),
+      ...getCapturedPieces("b", "b", 2),
+      ...getCapturedPieces("b", "n", 2),
+      ...getCapturedPieces("b", "r", 2),
+      ...getCapturedPieces("w", "p", 8),
+      ...getCapturedPieces("w", "k", 1),
+      ...getCapturedPieces("w", "q", 1),
+      ...getCapturedPieces("w", "b", 2),
+      ...getCapturedPieces("w", "n", 2),
+      ...getCapturedPieces("w", "r", 2),
+    ];
+  }, [pieces]);
+
+  const moves = useMemo(() => {
+    return client.moves();
+  }, [client]);
+
   const ascii = useMemo(() => {
     return client.ascii();
   }, [client]);
@@ -81,7 +116,9 @@ export function useChessState(inputString = DEFAULT_FEN_STRING) {
   return {
     fen: fenString,
     pieces,
+    capturedPieces,
     turn,
+    moves,
     ascii,
     client,
     isCheck,

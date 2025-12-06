@@ -18,9 +18,11 @@ import {
   Group,
   MantineProvider,
   Paper,
+  Progress,
   Stack,
   Switch,
   Title,
+  Typography,
 } from "@mantine/core";
 import { SquareColor } from "./lib/chess-types";
 import { useAppContext } from "./lib/app-context";
@@ -33,8 +35,10 @@ function App() {
   const { debugMode, setDebugMode } = useAppContext();
   const {
     pieces,
+    capturedPieces,
     movePieceToSquare,
     ascii,
+    moves,
     turn,
     fen,
     isCheck,
@@ -42,12 +46,6 @@ function App() {
     isGameOver,
     reset,
   } = useChessState();
-
-  const evaluation = -1.4;
-  const evaluatedColor: SquareColor = evaluation > 0 ? "light" : "dark";
-
-  const opened = false;
-  const toggle = () => {};
 
   return (
     <MantineProvider>
@@ -57,7 +55,6 @@ function App() {
         navbar={{
           width: 300,
           breakpoint: "sm",
-          collapsed: { mobile: !opened },
         }}
       >
         <AppShell.Header>
@@ -75,41 +72,6 @@ function App() {
           </Center>
         </AppShell.Header>
 
-        {debugMode && (
-          <AppShell.Aside>
-            <Group p="md">
-              <Stack>
-                <Code>
-                  <pre>{fen}</pre>
-                </Code>
-
-                <Code>
-                  <pre>{ascii}</pre>
-                </Code>
-
-                <Group>
-                  {turn === "b" ? (
-                    <Badge color="dark">Black</Badge>
-                  ) : (
-                    <Badge color="gray">White</Badge>
-                  )}
-                  {isCheckmate ? <Badge color="green">Checkmate</Badge> : null}
-                  {!isCheckmate && isCheck ? (
-                    <Badge color="yellow">Check</Badge>
-                  ) : null}
-                  {!isCheckmate && isGameOver ? (
-                    <Badge color="gray">Game Over</Badge>
-                  ) : null}
-                </Group>
-
-                <Group>
-                  <Button onClick={reset}>Reset</Button>
-                </Group>
-              </Stack>
-            </Group>
-          </AppShell.Aside>
-        )}
-
         <AppShell.Main>
           <BoardStage
             height={BOARD_HEIGHT}
@@ -118,15 +80,43 @@ function App() {
             movePieceToSquare={movePieceToSquare}
           />
         </AppShell.Main>
-      </AppShell>
 
-      <Container>
-        <Center>
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Card.Section></Card.Section>
-          </Card>
-        </Center>
-      </Container>
+        {debugMode && (
+          <AppShell.Aside>
+            <Group p="md">
+              <Stack>
+                <Code>
+                  <pre>{fen}</pre>
+                </Code>
+                <Code>
+                  <pre>{ascii}</pre>
+                </Code>
+                <Typography>{capturedPieces.length} captured pieces</Typography>
+                <Group>
+                  <p>
+                    {moves.length} moves for{" "}
+                    {turn === "b" ? (
+                      <Badge color="dark">Black</Badge>
+                    ) : (
+                      <Badge color="gray">White</Badge>
+                    )}
+                  </p>
+                  {isCheckmate ? <Badge color="green">Checkmate</Badge> : null}
+                  {!isCheckmate && isCheck ? (
+                    <Badge color="yellow">Check</Badge>
+                  ) : null}
+                  {!isCheckmate && isGameOver ? (
+                    <Badge color="gray">Game Over</Badge>
+                  ) : null}
+                </Group>
+                <Group>
+                  <Button onClick={reset}>Reset</Button>
+                </Group>
+              </Stack>
+            </Group>
+          </AppShell.Aside>
+        )}
+      </AppShell>
     </MantineProvider>
   );
 }

@@ -8,7 +8,7 @@ import React, {
 } from "react";
 
 const defaultAppContext = {
-  debugMode: false,
+  debugMode: true,
   setDebugMode: (a: boolean) => {
     return;
   },
