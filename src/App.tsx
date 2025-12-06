@@ -1,4 +1,3 @@
-import "./App.scss";
 import { BoardStage } from "./app/BoardStage";
 import { useChessState } from "./hooks/use-chess-state";
 
