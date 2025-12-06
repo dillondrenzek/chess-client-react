@@ -6,34 +6,47 @@ import {
   getPositionForSquare,
   getRankForRow,
 } from "../lib/chess-fns";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import * as ChessJs from "chess.js";
-import { useChessState } from "../hooks/use-chess-state";
+import { Piece } from "./Piece";
 
 function getSquareForLayerCoordinates(
   layerX: number,
   layerY: number,
   boardWidth: number,
   boardHeight: number
-) {
+): ChessJs.Square {
   const column = Math.floor((layerX / boardWidth) * 8);
   const row = Math.floor((layerY / boardHeight) * 8);
-  return `${getFileForColumn(column)}${getRankForRow(row)}`;
+  return `${getFileForColumn(column)}${getRankForRow(row)}` as ChessJs.Square;
 }
 
 export type BoardStageProps = {
   height: number;
   width: number;
+  pieces: {
+    square: ChessJs.Square;
+    type: ChessJs.PieceSymbol;
+    color: ChessJs.Color;
+  }[];
+  movePieceToSquare: (
+    fromSquare: ChessJs.Square,
+    piece: {
+      type: ChessJs.PieceSymbol;
+      color: ChessJs.Color;
+    },
+    toSquare: ChessJs.Square
+  ) => void;
 };
 
 export function BoardStage(props: BoardStageProps) {
-  const { height: boardHeight, width: boardWidth } = props;
+  const {
+    height: boardHeight,
+    width: boardWidth,
+    pieces,
+    movePieceToSquare,
+  } = props;
   const { squares } = useBoardStore();
-  const { pieces, movePieceToSquare, ascii } = useChessState();
-
-  useEffect(() => {
-    console.log(ascii);
-  }, [ascii]);
 
   const handleDragStart = useCallback<NonNullable<PieceProps["onDragStart"]>>(
     (e, kEvt) => {
@@ -59,15 +72,11 @@ export function BoardStage(props: BoardStageProps) {
           boardHeight
         );
 
-        // client.remove()
-
         movePieceToSquare(
           e.square,
           { type: e.type, color: e.color },
           newSquare.toLowerCase() as ChessJs.Square
         );
-
-        // console.log("onDragEnd", e, layerX, layerY, newSquare);
       }
     },
     [boardHeight, boardWidth, movePieceToSquare]
@@ -168,18 +177,17 @@ export function BoardStage(props: BoardStageProps) {
         {positionedPieces.map(({ piece, x, y, pieceHeight, pieceWidth }) => {
           return (
             <React.Fragment key={piece.color + piece.square + piece.type}>
-              <Rect
+              <Piece
                 height={pieceHeight}
                 width={pieceWidth}
                 x={x}
                 y={y}
-                fill="rgba(200,50,50, 1)"
-                draggable
-                onClick={handleClick}
-                onDragStart={(e) => handleDragStart(piece, e)}
-                onDragMove={(e) => handleDragMove(piece, e)}
-                onDragEnd={(e) => handleDragEnd(piece, e)}
+                piece={piece}
+                onDragStart={handleDragStart}
+                onDragMove={handleDragMove}
+                onDragEnd={handleDragEnd}
               />
+              <Rect />
               <Text
                 text={`${piece.square.toUpperCase()}`}
                 x={x + 5}

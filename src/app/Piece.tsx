@@ -1,70 +1,49 @@
-import { useCallback, MouseEvent, useMemo, CSSProperties } from "react";
 import * as ChessJs from "chess.js";
+import { Image as KonvaImage } from "react-konva";
+import useImage from "use-image";
+import Konva from "konva";
+import { KonvaEventObject } from "../lib/konva-types";
 
-export interface PieceProps {
-  piece: {
-    square: ChessJs.Square;
-    type: ChessJs.PieceSymbol;
-    color: ChessJs.Color;
+type KonvaImageProps = Konva.ImageConfig;
+
+type PieceModel = {
+  square: ChessJs.Square;
+  type: ChessJs.PieceSymbol;
+  color: ChessJs.Color;
+};
+
+export type PieceProps = {
+  piece: PieceModel;
+} & Omit<KonvaImageProps, "image"> & {
+    onDragStart: (
+      piece: PieceModel,
+      konvaEvt: KonvaEventObject<"onDragStart">
+    ) => void;
+    onDragMove: (
+      piece: PieceModel,
+      konvaEvt: KonvaEventObject<"onDragMove">
+    ) => void;
+    onDragEnd: (
+      piece: PieceModel,
+      konvaEvt: KonvaEventObject<"onDragEnd">
+    ) => void;
   };
-  style: CSSProperties;
-  onMouseDown: (
-    piece: {
-      square: ChessJs.Square;
-      type: ChessJs.PieceSymbol;
-      color: ChessJs.Color;
-    },
-    event: MouseEvent<HTMLDivElement>
-  ) => void;
-  onMouseUp: (
-    piece: {
-      square: ChessJs.Square;
-      type: ChessJs.PieceSymbol;
-      color: ChessJs.Color;
-    },
-    event: MouseEvent<HTMLDivElement>
-  ) => void;
-}
 
 export function Piece(props: PieceProps) {
-  const { piece, onMouseDown, onMouseUp, style } = props;
+  const { piece, onDragEnd, onDragMove, onDragStart, ...passthrough } = props;
 
-  const handleMouseDown = useCallback(
-    (e: MouseEvent<HTMLDivElement>) => {
-      console.log("Mousedown (Piece):", e);
-      // setIsSelected(true);
-      onMouseDown(piece, e);
-    },
-    [piece, onMouseDown]
-  );
+  const pieceCode = `${piece.color}${piece.type}`;
+  const imageUrl = `https://images.chesscomfiles.com/chess-themes/pieces/neo_wood/150/${pieceCode}.png`;
+  const [image] = useImage(imageUrl);
 
-  const handleMouseUp = useCallback(
-    (e: MouseEvent<HTMLDivElement>) => {
-      console.log("Mouseup (Piece)", e);
-      // setIsSelected(false);
-      onMouseUp(piece, e);
-    },
-    [onMouseUp, piece]
-  );
-
-  const pieceGraphicStyle = useMemo<React.CSSProperties>(() => {
-    const pieceCode = `${piece.color}${piece.type}`;
-    return {
-      cursor: "pointer",
-      pointerEvents: "all",
-      backgroundImage: `url(https://images.chesscomfiles.com/chess-themes/pieces/neo_wood/150/${pieceCode}.png)`,
-    };
-  }, [piece]);
-
-  return (
-    <div
-      className="piece"
-      style={{
-        ...style,
-        ...pieceGraphicStyle,
-      }}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
+  return image ? (
+    <KonvaImage
+      image={image}
+      draggable
+      {...passthrough}
+      onDragStart={(e) => onDragStart(piece, e)}
+      onDragMove={(e) => onDragMove(piece, e)}
+      onDragEnd={(e) => onDragEnd(piece, e)}
     />
-  );
+  ) : null;
 }

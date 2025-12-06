@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as ChessJs from "chess.js";
+import { parseChessJsError } from "../lib/chess-js-error";
 
 declare global {
   interface Window {
@@ -35,12 +36,9 @@ export function useChessState(inputString = DEFAULT_FEN_STRING) {
         });
         setFenString(move.after);
       } catch (e) {
-        console.error(e);
+        const error = parseChessJsError(e);
+        console.error("Parsed error:", error);
       }
-
-      // client.remove(fromSquare);
-      // client.put(piece, toSquare);
-      // setFenString(client.fen());
     },
     [client]
   );
